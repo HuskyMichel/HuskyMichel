@@ -1,0 +1,47 @@
+/* Direction visuelle commune : plateforme de créateurs inspirée de YouTube. */
+:root { --yt-bg: #0f0f0f; --yt-panel: #181818; --yt-panel-hover: #242424; --yt-text: #f1f1f1; --yt-muted: #aaa; --yt-line: #303030; --yt-red: #ff0033; --yt-red-hover: #ff2853; }
+body { background: var(--yt-bg); color: var(--yt-text); }
+header, .barreHaut, #barreCompte { background: rgba(15,15,15,.96); border-color: var(--yt-line); box-shadow: 0 1px 0 rgba(255,255,255,.04); }
+.search input, .barreRecherche input { background: #121212; border-color: #303030; border-radius: 8px; }
+.search input:focus, .barreRecherche input:focus { border-color: #3ea6ff; box-shadow: 0 0 0 1px #3ea6ff; }
+#loginBtn, .boutonConnexion, .boutonSauvegarder, #saveProfile, .boutonVoirProfil { color: white; background: var(--yt-red); border-radius: 9px; box-shadow: none; }
+#loginBtn:hover, .boutonConnexion:hover, .boutonSauvegarder:hover, #saveProfile:hover, .boutonVoirProfil:hover { background: var(--yt-red-hover); box-shadow: none; }
+.menu, #resultatsRecherche, .resultatsRecherche { background: #282828; border-color: #3b3b3b; border-radius: 12px; }
+.menu a:hover, .menu button:hover, .resultatRecherche:hover { background: #3f3f3f; }
+
+/* Accueil : grille de chaînes plus proche d'une plateforme vidéo. */
+body:has(#listeProfils) main { padding-top: 34px; }
+body:has(#listeProfils) h1 { font-size: clamp(1.75rem, 3vw, 2.5rem); letter-spacing: -.03em; }
+body:has(#listeProfils) h2 { margin-top: 4px; color: var(--yt-muted); font-size: .95rem; }
+#listeProfils { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin-top: 25px; }
+.carteProfil { background: var(--yt-panel); border-color: transparent; border-radius: 12px; box-shadow: none; }
+.carteProfil::before { content: ""; display: block; height: 74px; background: linear-gradient(115deg, #272727, #111 45%, #4a121d); }
+.carteProfil:hover { border-color: #3a3a3a; box-shadow: 0 8px 24px rgba(0,0,0,.35); transform: translateY(-3px); }
+.cartePhoto { width: 88px; height: 88px; margin: -44px 0 0 18px; border: 3px solid var(--yt-panel); box-shadow: none; }
+.carteContenu { padding: 12px 18px 18px; }
+.cartePseudo { font-size: 1.08rem; }.carteDescription { min-height: 42px; font-size: .88rem; color: var(--yt-muted); }
+.categorieCarte { color: #ddd; background: #303030; border-color: transparent; font-weight: 600; }.reseauCarte { color: #ddd; background: transparent; border-color: #444; }.reseauCarte:hover { background: #303030; }
+.boutonLike, .boutonFavori, #retourAccueil { background: #303030; border-color: transparent; border-radius: 9px; }.boutonLike:hover, .boutonFavori:hover, #retourAccueil:hover { background: #444; }
+.boutonLike.liked, .boutonLike.likeActif { background: var(--yt-red); }.boutonFavori.favoriActif { color: #ffd757; background: #39320d; }
+
+/* Page chaîne : bannière et contenu d'une vraie page créateur.  La variable
+   --profile-banner pourra plus tard être définie par profil après achat. */
+.banner { height: clamp(180px, 25vw, 300px); background: linear-gradient(90deg, rgba(0,0,0,.38), rgba(0,0,0,.05)), var(--profile-banner, url("Photo de profil/Accueill.jpg")) center/cover; }
+body:has(.profilHeader) main { width: min(1120px,100%); margin: 0 auto; padding: 0 clamp(16px,4vw,38px) 70px; }
+.profilHeader { padding: 0; }.photo { width: 132px; height: 132px; margin-top: -66px; border-color: var(--yt-bg); box-shadow: none; }
+.infos { margin-top: 12px; padding: 0; background: transparent; border: 0; border-radius: 0; box-shadow: none; }
+#pseudo { font-size: clamp(1.9rem,4vw,2.7rem); }.pseudoFavori { gap: 11px; }
+#descriptionCourte { color: var(--yt-muted); }.profilLikeZone { padding-bottom: 20px; margin: 18px 0 0; border-bottom: 1px solid var(--yt-line); }
+.section { padding: 22px 0; margin-top: 0; background: transparent; border: 0; border-bottom: 1px solid var(--yt-line); border-radius: 0; }
+.section h2 { font-size: 1.12rem; }.tag, .reseau { color: #eee; background: #303030; border-color: transparent; }.reseau:hover { background: #444; }
+#videoContainer iframe { border-radius: 10px; }.listeFavoris { grid-template-columns: repeat(auto-fill,minmax(250px,1fr)); }.carteFavori { background: var(--yt-panel); border-color: transparent; }
+
+/* Pages de création et modification : formulaire clair, sans effet de carte lourd. */
+body:has(#saveProfile) .section, body:has(.conteneurModification) .sectionModification { background: var(--yt-panel); border: 1px solid var(--yt-line); border-radius: 12px; padding: 22px; margin-bottom: 16px; }
+body:has(#saveProfile) .section:hover { transform: none; border-color: #4a4a4a; box-shadow: none; }
+body:has(#saveProfile) h1, body:has(.conteneurModification) h1 { background: none; -webkit-text-fill-color: var(--yt-text); color: var(--yt-text); }
+.boiteModification { background: transparent; border: 0; box-shadow: none; }.sectionModification { border-top: 0; }
+body:has(#saveProfile) input, body:has(#saveProfile) textarea, .sectionModification input, .sectionModification textarea { background: #121212; border-color: #3a3a3a; }
+body:has(#saveProfile) .categorie-selectionnee, body:has(#saveProfile) .categories-liste .categorie.selectionnee { background: var(--yt-red); border-color: var(--yt-red); }
+body:has(#saveProfile) .categorie-groupe { background: #121212; border-color: #303030; }
+@media (max-width:650px) { .carteProfil::before { height: 62px; }.cartePhoto { margin-top: -39px; width: 78px; height: 78px; }.banner { height: 185px; }.photo { width: 110px; height: 110px; margin-top: -55px; } }

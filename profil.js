@@ -554,11 +554,7 @@ if(
                     (profilDoc)=>{
 
                         const data =
-    profilActuel;
-
-// Modifier le titre de l'onglet
-document.title =
-    (data.pseudo || "Profil") + " - HuskyMichel";
+                            profilDoc.data();
 
 
                         const nomProfil =
@@ -813,6 +809,11 @@ async function chargerProfil(){
 
         const data =
             profilActuel;
+
+
+        document.title =
+            (data.pseudo || "Profil") +
+            " - HuskyMichel";
 
 
         /* ==============================================
