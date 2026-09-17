@@ -131,6 +131,8 @@ const params =
 
 const pseudoRecherche =
     params.get("pseudo");
+	
+	
 
 
 /* =========================================================
@@ -807,6 +809,11 @@ async function chargerProfil(){
 
         const data =
             profilActuel;
+
+
+        document.title =
+            (data.pseudo || "Profil") +
+            " - HuskyMichel";
 
 
         /* ==============================================
