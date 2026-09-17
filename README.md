@@ -1,2 +1,2 @@
 # HuskyMichel-site
-Site officiel de HuskyMichel – Le Manager
+Site officiel de HuskyMichel
