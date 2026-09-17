@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Créer mon profil - HuskyMichel</title>
+
+<link rel="icon" href="logo.jpg">
+
+<link rel="stylesheet" href="creer-profil.css">
+
+</head>
+
+
+<body>
+
+
+<div id="barreCompte">
+
+    <button
+        id="deconnexion"
+        type="button"
+    >
+        🚪 Déconnexion
+    </button>
+
+</div>
+
+
+<main>
+
+
+    <h1>
+        Créer mon profil
+    </h1>
+
+
+    <p class="sousTitre">
+        Personnalise ton profil et présente-toi aux autres.
+    </p>
+
+
+    <div class="section">
+
+        <h2>
+            📸 Photo de profil
+        </h2>
+
+        <img
+            id="photo"
+            alt="Photo de profil"
+        >
+
+    </div>
+
+
+    <div class="section">
+
+        <h2>
+            👤 Pseudo
+        </h2>
+
+        <p id="pseudoEtat"></p>
+
+        <input
+            id="pseudo"
+            type="text"
+            maxlength="30"
+            placeholder="Votre pseudo"
+            autocomplete="off"
+        >
+
+    </div>
+
+
+    <div class="section">
+
+        <h2>
+            ✨ Présentation
+        </h2>
+
+        <label for="descriptionCourte">
+            Description courte
+        </label>
+
+        <input
+            id="descriptionCourte"
+            maxlength="50"
+            placeholder="Une courte phrase pour te présenter..."
+        >
+
+        <label for="descriptionLongue">
+            Description complète
+        </label>
+
+        <textarea
+            id="descriptionLongue"
+            maxlength="1000"
+            rows="8"
+            placeholder="Présente-toi, parle de tes passions, de ton contenu..."
+        ></textarea>
+
+    </div>
+
+
+    <div class="section">
+
+        <h2>
+            🌐 Réseaux sociaux
+        </h2>
+
+        <div id="reseaux"></div>
+
+        <button
+            type="button"
+            id="ajouterReseau"
+        >
+            ＋ Ajouter un réseau
+        </button>
+
+    </div>
+
+
+    <div class="section">
+
+        <h2>
+            🎬 Vidéo mise en avant
+        </h2>
+
+        <label for="videoYoutube">
+            Lien de ta vidéo YouTube
+        </label>
+
+        <input
+            type="url"
+            id="videoYoutube"
+            placeholder="https://www.youtube.com/watch?v=..."
+        >
+
+    </div>
+
+
+    <div class="section">
+
+        <h2>
+            🏷️ Catégories
+        </h2>
+
+        <h3 style="
+            font-size:16px;
+            margin-bottom:12px;
+            color:#ddd;
+        ">
+            Catégories sélectionnées
+        </h3>
+
+        <div id="categoriesSelectionnees"></div>
+
+        <hr style="margin:20px 0;">
+
+        <div
+            id="categoriesContainer"
+            class="categories-groupes"
+        >
+            Chargement des catégories...
+        </div>
+
+    </div>
+
+
+    <div class="save-container">
+
+        <button
+            id="saveProfile"
+            type="button"
+        >
+            💾 Créer mon profil
+        </button>
+
+        <!--
+            Le bouton supprimer sera créé automatiquement
+            ici uniquement si un profil existe déjà.
+        -->
+
+    </div>
+
+
+</main>
+
+
+<script
+    type="module"
+    src="creer-profil.js"
+></script>
+
+
+</body>
+
+</html>

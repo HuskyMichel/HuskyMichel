@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Modifier mon profil</title>
+
+    <link rel="stylesheet" href="modifier-profil.css">
+
+</head>
+
+
+<body>
+
+
+    <!-- =====================================================
+         BARRE DU HAUT
+    ====================================================== -->
+
+    <header class="barreHaut">
+
+        <div
+            id="logoAccueil"
+            class="logoAccueil"
+        >
+
+            <img
+                src="Photo de profil/titre.jpg"
+                alt="Accueil"
+            >
+
+        </div>
+
+
+        <div class="barreRecherche">
+
+            <input
+                type="text"
+                id="rechercheProfil"
+                placeholder="Rechercher un profil..."
+                autocomplete="off"
+            >
+
+            <div
+                id="resultatsRecherche"
+                class="resultatsRecherche"
+            ></div>
+
+        </div>
+
+
+        <div class="compte">
+
+            <!-- Bouton connexion -->
+
+            <button
+                id="loginBtn"
+                class="boutonConnexion"
+                type="button"
+            >
+
+                Se connecter
+
+            </button>
+
+
+            <!-- Profil connecté -->
+
+            <div
+                id="profile"
+                class="profile"
+                style="display:none;"
+            >
+
+                <img
+                    id="avatar"
+                    class="avatar"
+                    src=""
+                    alt="Mon profil"
+                >
+
+
+                <div
+                    id="menu"
+                    class="menu"
+                >
+
+                    <button
+                        id="monProfil"
+                        type="button"
+                    >
+
+                        👤 Mon profil
+
+                    </button>
+
+
+                    <button
+                        id="retourAccueil"
+                        type="button"
+                    >
+
+                        🏠 Accueil
+
+                    </button>
+
+
+                    <button
+                        id="logout"
+                        type="button"
+                    >
+
+                        🚪 Se déconnecter
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- =====================================================
+         CONTENU
+    ====================================================== -->
+
+    <main class="conteneurModification">
+
+
+        <div class="boiteModification">
+
+
+            <h1>
+
+                ✏️ Modifier mon profil
+
+            </h1>
+
+
+            <p class="sousTitreModification">
+
+                Modifie les informations de ton profil.
+
+            </p>
+
+
+
+            <!-- =================================================
+                 PHOTO
+            ================================================== -->
+
+            <section class="sectionModification">
+
+                <h2>
+
+                    🖼️ Photo de profil
+
+                </h2>
+
+
+                <div class="apercuPhoto">
+
+                    <img
+                        id="apercuPhoto"
+                        src=""
+                        alt="Aperçu de la photo"
+                    >
+
+                </div>
+
+
+                <input
+                    type="url"
+                    id="photo"
+                    placeholder="Lien de ta photo"
+                >
+
+                <p class="informationChamp">
+
+                    Utilise un lien direct vers ton image.
+
+                </p>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 PSEUDO
+            ================================================== -->
+
+            <section class="sectionModification">
+
+                <h2>
+
+                    👤 Pseudo
+
+                </h2>
+
+
+                <input
+                    type="text"
+                    id="pseudo"
+                    placeholder="Ton pseudo"
+                    maxlength="30"
+                >
+
+            </section>
+
+
+
+            <!-- =================================================
+                 DESCRIPTION COURTE
+            ================================================== -->
+
+            <section class="sectionModification">
+
+                <h2>
+
+                    📝 Description courte
+
+                </h2>
+
+
+                <input
+                    type="text"
+                    id="descriptionCourte"
+                    placeholder="Une courte présentation..."
+                    maxlength="150"
+                >
+
+            </section>
+
+
+
+            <!-- =================================================
+                 DESCRIPTION LONGUE
+            ================================================== -->
+
+            <section class="sectionModification">
+
+                <h2>
+
+                    📖 Description
+
+                </h2>
+
+
+                <textarea
+                    id="descriptionLongue"
+                    placeholder="Présente-toi plus en détail..."
+                    rows="7"
+                ></textarea>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 CATEGORIES
+            ================================================== -->
+
+            <section class="sectionModification">
+
+                <h2>
+
+                    🏷️ Catégories
+
+                </h2>
+
+
+                <p class="informationChamp">
+
+                    Sépare les catégories par une virgule.
+
+                    <br>
+
+                    Exemple :
+                    Gaming, YouTube, Minecraft
+
+                </p>
+
+
+                <input
+                    type="text"
+                    id="categories"
+                    placeholder="Gaming, YouTube, Minecraft..."
+                >
+
+            </section>
+
+
+
+            <!-- =================================================
+                 RESEAUX
+            ================================================== -->
+
+            <section class="sectionModification">
+
+                <h2>
+
+                    🌐 Réseaux sociaux
+
+                </h2>
+
+
+                <div id="reseauxModification">
+
+
+                    <!-- Réseaux ajoutés ici par JavaScript -->
+
+
+                </div>
+
+
+                <button
+                    id="ajouterReseau"
+                    class="boutonSecondaire"
+                    type="button"
+                >
+
+                    ➕ Ajouter un réseau
+
+                </button>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 VIDEO YOUTUBE
+            ================================================== -->
+
+            <section class="sectionModification">
+
+                <h2>
+
+                    🎥 Vidéo YouTube
+
+                </h2>
+
+
+                <input
+                    type="url"
+                    id="videoYoutube"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                >
+
+
+                <p class="informationChamp">
+
+                    Tu peux mettre un lien YouTube classique,
+                    youtu.be ou embed.
+
+                </p>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 MESSAGE
+            ================================================== -->
+
+            <div
+                id="messageModification"
+                class="messageModification"
+            ></div>
+
+
+
+            <!-- =================================================
+                 BOUTONS
+            ================================================== -->
+
+            <div class="boutonsModification">
+
+
+                <button
+                    id="annulerModification"
+                    class="boutonAnnuler"
+                    type="button"
+                >
+
+                    ← Annuler
+
+                </button>
+
+
+                <button
+                    id="sauvegarderProfil"
+                    class="boutonSauvegarder"
+                    type="button"
+                >
+
+                    💾 Sauvegarder
+
+                </button>
+
+
+            </div>
+
+
+        </div>
+
+    </main>
+
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+
+    <script
+        type="module"
+        src="modifier-profil.js"
+    ></script>
+
+
+</body>
+
+</html>

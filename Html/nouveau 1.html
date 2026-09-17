@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Accueil</title>
+
+<link rel="icon" href="Photo de profil/titre.jpg">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial, sans-serif;
+    background:#1f1f1f;
+    color:white;
+}
+
+/* ========================= */
+/* HEADER */
+/* ========================= */
+
+header{
+
+    position:sticky;
+    top:0;
+
+    height:60px;
+
+    background:#0f0f0f;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:0 20px;
+
+    border-bottom:1px solid #2b2b2b;
+
+    z-index:1000;
+
+}
+
+/* ========================= */
+/* LOGO */
+/* ========================= */
+
+.logo{
+
+    display:flex;
+    align-items:center;
+
+}
+
+.logo img{
+
+    height:42px;
+
+    cursor:pointer;
+
+}
+
+/* ========================= */
+/* RECHERCHE */
+/* ========================= */
+
+.search{
+
+    flex:1;
+
+    display:flex;
+
+    justify-content:center;
+
+}
+
+.search input{
+
+    width:520px;
+
+    max-width:90%;
+
+    background:#151515;
+
+    color:white;
+
+    border:1px solid #333;
+
+    border-radius:30px;
+
+    padding:11px 18px;
+
+    font-size:15px;
+
+    outline:none;
+
+}
+
+.search input:focus{
+
+    border-color:#3ea6ff;
+
+}
+
+/* ========================= */
+/* COMPTE */
+/* ========================= */
+
+.account{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+}
+
+/* bouton connexion */
+
+#loginBtn{
+
+    background:#3ea6ff;
+
+    color:white;
+
+    border:none;
+
+    border-radius:25px;
+
+    padding:10px 18px;
+
+    font-size:15px;
+
+    cursor:pointer;
+
+    transition:0.2s;
+
+}
+
+#loginBtn:hover{
+
+    background:#61b8ff;
+
+}
+
+/* ========================= */
+/* PHOTO */
+/* ========================= */
+
+.profile{
+
+    display:none;
+
+    position:relative;
+
+}
+
+#avatar{
+
+    width:42px;
+
+    height:42px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+
+    cursor:pointer;
+
+    border:2px solid #3ea6ff;
+
+}
+
+/* ========================= */
+/* MENU */
+/* ========================= */
+
+.menu{
+
+    display:none;
+
+    position:absolute;
+
+    top:55px;
+
+    right:0;
+
+    width:230px;
+
+    background:#242424;
+
+    border-radius:12px;
+
+    overflow:hidden;
+
+    box-shadow:0 0 20px rgba(0,0,0,.5);
+
+}
+
+.menu a,
+.menu button{
+
+    width:100%;
+
+    display:block;
+
+    padding:14px;
+
+    background:none;
+
+    border:none;
+
+    color:white;
+
+    text-align:left;
+
+    font-size:15px;
+
+    cursor:pointer;
+
+}
+
+.menu a{
+
+    text-decoration:none;
+
+}
+
+.menu a:hover,
+.menu button:hover{
+
+    background:#333;
+
+}
+
+/* ========================= */
+
+main{
+
+    padding:25px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<div class="logo">
+
+<a href="https://huskymichel.github.io/HuskyMichel-site/">
+
+<img src="Photo de profil/Accueil.jpg" alt="Accueil">
+
+</a>
+
+</div>
+
+<div class="search">
+
+<input
+type="text"
+placeholder="🔍 Rechercher un profil..."
+>
+
+</div>
+
+<div class="account">
+
+<button id="loginBtn">
+
+Se connecter
+
+</button>
+
+<div class="profile" id="profile">
+
+<img id="avatar">
+
+<div class="menu" id="menu">
+
+<a href="#">👤 Mon profil</a>
+
+<button id="changePhoto">
+
+🖼️ Changer la photo
+
+</button>
+
+<button id="logout">
+
+🚪 Déconnexion
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</header>
+
+<main>
+
+<h1>Bienvenue !</h1>
+
+<p>Le contenu du site arrivera ici.</p>
+
+</main>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+
+import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    signOut,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+/* ========================= */
+/* CONFIG FIREBASE */
+/* ========================= */
+
+const firebaseConfig = {
+   apiKey: "AIzaSyA_4v5IjbJBT3R6dyKAtGmsqy-EA_3a73U",
+   authDomain: "huskymichel2.firebaseapp.com",
+   projectId: "huskymichel2",
+   storageBucket: "huskymichel2.firebasestorage.app",
+   messagingSenderId: "803041103978",
+   appId: "1:803041103978:web:0415d72f91e30735a47a13"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+
+const provider = new GoogleAuthProvider();
+
+/* ========================= */
+/* ELEMENTS HTML */
+/* ========================= */
+
+const loginBtn = document.getElementById("loginBtn");
+
+const profile = document.getElementById("profile");
+
+const avatar = document.getElementById("avatar");
+
+const menu = document.getElementById("menu");
+
+const logout = document.getElementById("logout");
+
+/* ========================= */
+/* MENU */
+/* ========================= */
+
+avatar.addEventListener("click", () => {
+
+    if(menu.style.display==="block"){
+
+        menu.style.display="none";
+
+    }
+
+    else{
+
+        menu.style.display="block";
+
+    }
+
+});
+
+document.addEventListener("click",(event)=>{
+
+    if(!profile.contains(event.target)){
+
+        menu.style.display="none";
+
+    }
+
+});
+
+/* ========================= */
+/* CONNEXION */
+/* ========================= */
+
+loginBtn.addEventListener("click", async ()=>{
+
+    try{
+
+        await signInWithPopup(auth,provider);
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+    }
+
+});
+
+/* ========================= */
+/* DECONNEXION */
+/* ========================= */
+
+logout.addEventListener("click", async ()=>{
+
+    try{
+
+        await signOut(auth);
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+    }
+
+});
+
+/* ========================= */
+/* ETAT DE LA CONNEXION */
+/* ========================= */
+
+onAuthStateChanged(auth,(user)=>{
+
+    if(user){
+
+        console.log("Connecté :", user.displayName);
+
+        loginBtn.style.display="none";
+
+        profile.style.display="block";
+
+        avatar.src=user.photoURL;
+
+    }
+
+    else{
+
+        loginBtn.style.display="block";
+
+        profile.style.display="none";
+
+        menu.style.display="none";
+
+    }
+
+});
+
+/* ========================= */
+/* CHANGER LA PHOTO */
+/* ========================= */
+
+document.getElementById("changePhoto").addEventListener("click",()=>{
+
+    alert("Cette fonctionnalité sera ajoutée plus tard.");
+
+});
+
+/* ========================= */
+/* FIN */
+/* ========================= */
+
+</script>
+
+</body>
+</html>
