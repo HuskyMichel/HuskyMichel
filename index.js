@@ -54,6 +54,44 @@ let utilisateurActuel = null;
 
 
 /* =========================================================
+   VISITEUR
+   1 visite comptabilisée toutes les 24 heures
+========================================================= */
+
+let visiteurId =
+    localStorage.getItem("huskymichel_visiteur_id");
+
+if(!visiteurId){
+
+    if(
+        typeof crypto !== "undefined" &&
+        typeof crypto.randomUUID === "function"
+    ){
+
+        visiteurId =
+            crypto.randomUUID();
+
+    }else{
+
+        visiteurId =
+            "visiteur_" +
+            Date.now() +
+            "_" +
+            Math.random()
+                .toString(36)
+                .substring(2);
+
+    }
+
+    localStorage.setItem(
+        "huskymichel_visiteur_id",
+        visiteurId
+    );
+
+}
+
+
+/* =========================================================
    GOOGLE
 ========================================================= */
 
@@ -756,6 +794,73 @@ async function chargerLikes(
 
 
 /* =========================================================
+   COMPTER LES VUES
+========================================================= */
+
+async function chargerVues(
+    profilId,
+    compteurVues
+){
+
+    if(
+        !profilId ||
+        !compteurVues
+    ){
+
+        return;
+
+    }
+
+
+    try{
+
+        const vuesRef =
+            collection(
+                db,
+                "users",
+                profilId,
+                "vues"
+            );
+
+
+        const snapshot =
+            await getDocs(
+                vuesRef
+            );
+
+
+        const nombre =
+            snapshot.size;
+
+
+        compteurVues.dataset.vues =
+            nombre;
+
+
+        compteurVues.textContent =
+            "👁️ " +
+            nombre +
+            (
+                nombre > 1
+                ? " vues"
+                : " vue"
+            );
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Erreur lors du chargement des vues :",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
    FAVORIS
 ========================================================= */
 
@@ -1208,6 +1313,7 @@ async function chargerProfils(){
 
                         }
 
+
                         else if(
                             reseau.type ===
                             "Twitch"
@@ -1217,6 +1323,7 @@ async function chargerProfils(){
                                 "🎮";
 
                         }
+
 
                         else if(
                             reseau.type ===
@@ -1228,6 +1335,7 @@ async function chargerProfils(){
 
                         }
 
+
                         else if(
                             reseau.type ===
                             "TikTok"
@@ -1237,6 +1345,7 @@ async function chargerProfils(){
                                 "🎵";
 
                         }
+
 
                         else if(
                             reseau.type ===
@@ -1248,6 +1357,7 @@ async function chargerProfils(){
 
                         }
 
+
                         else if(
                             reseau.type ===
                             "Snapchat"
@@ -1257,6 +1367,7 @@ async function chargerProfils(){
                                 "👻";
 
                         }
+
 
                         else if(
                             reseau.type ===
@@ -1268,6 +1379,7 @@ async function chargerProfils(){
 
                         }
 
+
                         else if(
                             reseau.type ===
                             "Kick"
@@ -1278,6 +1390,7 @@ async function chargerProfils(){
 
                         }
 
+
                         else if(
                             reseau.type ===
                             "Paypal"
@@ -1287,6 +1400,7 @@ async function chargerProfils(){
                                 "💰";
 
                         }
+
 
                         else if(
                             reseau.type ===
@@ -1384,6 +1498,15 @@ async function chargerProfils(){
 
                             </span>
 
+                            <span
+                                class="carteVuesCompteur"
+                                data-vues="0"
+                            >
+
+                                👁️ 0 vue
+
+                            </span>
+
                         </div>
 
 
@@ -1442,6 +1565,12 @@ async function chargerProfils(){
                     );
 
 
+                const compteurVues =
+                    carte.querySelector(
+                        ".carteVuesCompteur"
+                    );
+
+
                 const boutonFavori =
                     carte.querySelector(
                         ".boutonFavori"
@@ -1456,6 +1585,16 @@ async function chargerProfils(){
                     pseudo,
                     boutonLike,
                     compteur
+                );
+
+
+                /* =================================================
+                   VUES
+                ================================================= */
+
+                chargerVues(
+                    profilId,
+                    compteurVues
                 );
 
 
