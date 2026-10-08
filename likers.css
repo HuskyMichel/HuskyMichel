@@ -4,12 +4,12 @@
 
 .pageLikers{
 
-    width:min(1000px,100%);
+    width:min(1100px,100%);
 
     margin:0 auto;
 
     padding:
-        40px
+        30px
         24px
         80px;
 
@@ -28,24 +28,34 @@
 
     gap:8px;
 
-    margin-bottom:30px;
+    margin-bottom:42px;
 
-    padding:10px 15px;
+    padding:9px 0;
 
-    color:var(--text);
+    color:var(--muted);
 
-    background:rgba(255,255,255,.07);
+    background:none;
 
-    border:1px solid var(--line);
+    border:none;
 
-    border-radius:10px;
+    font-size:.95rem;
 
     font-weight:700;
 
     cursor:pointer;
 
     transition:
-        background .2s,
+        color .2s,
+        transform .2s;
+
+}
+
+
+.retourProfil span{
+
+    font-size:1.35rem;
+
+    transition:
         transform .2s;
 
 }
@@ -53,9 +63,14 @@
 
 .retourProfil:hover{
 
-    background:rgba(255,255,255,.12);
+    color:var(--text);
 
-    transform:translateX(-3px);
+}
+
+
+.retourProfil:hover span{
+
+    transform:translateX(-4px);
 
 }
 
@@ -66,36 +81,7 @@
 
 .titreLikers{
 
-    display:flex;
-
-    align-items:center;
-
-    gap:18px;
-
     margin-bottom:30px;
-
-}
-
-
-.titreLikersIcon{
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    width:58px;
-
-    height:58px;
-
-    background:rgba(255,70,90,.12);
-
-    border:1px solid rgba(255,70,90,.25);
-
-    border-radius:16px;
-
-    font-size:28px;
 
 }
 
@@ -104,16 +90,29 @@
 
     margin:0;
 
-    font-size:clamp(1.5rem,4vw,2.2rem);
+    color:var(--text);
+
+    font-size:
+        clamp(
+            1.6rem,
+            4vw,
+            2.2rem
+        );
+
+    font-weight:850;
+
+    letter-spacing:-.5px;
 
 }
 
 
 .titreLikers p{
 
-    margin:5px 0 0;
+    margin:7px 0 0;
 
     color:var(--muted);
+
+    font-size:.95rem;
 
     font-weight:650;
 
@@ -131,69 +130,101 @@
     grid-template-columns:
         repeat(
             auto-fill,
-            minmax(280px,1fr)
+            minmax(300px,1fr)
         );
 
-    gap:14px;
+    gap:18px;
 
 }
 
 
 /* =========================================================
-   CARTE LIKER
+   CARTE
 ========================================================= */
 
 .carteLiker{
+
+    position:relative;
 
     display:flex;
 
     align-items:center;
 
-    gap:14px;
+    min-height:92px;
 
-    padding:14px;
+    padding:16px 17px;
 
     color:var(--text);
 
     background:
         linear-gradient(
             145deg,
-            rgba(31,38,50,.95),
-            rgba(21,26,35,.95)
+            rgba(30,37,49,.96),
+            rgba(18,23,31,.96)
         );
 
-    border:1px solid var(--line);
+    border:1px solid
+        rgba(255,255,255,.07);
 
-    border-radius:16px;
+    border-radius:18px;
 
     cursor:pointer;
 
+    overflow:hidden;
+
     transition:
-        transform .2s,
-        background .2s,
-        border-color .2s,
-        box-shadow .2s;
+        transform .2s ease,
+        border-color .2s ease,
+        box-shadow .2s ease,
+        background .2s ease;
 
 }
 
 
+/* LÉGER REFLET */
+
+.carteLiker::before{
+
+    content:"";
+
+    position:absolute;
+
+    top:0;
+    left:0;
+
+    width:100%;
+    height:1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,.14),
+            transparent
+        );
+
+}
+
+
+/* HOVER */
+
 .carteLiker:hover{
 
-    transform:translateY(-3px);
+    transform:translateY(-4px);
 
     background:
         linear-gradient(
             145deg,
-            rgba(40,48,62,.98),
-            rgba(25,31,41,.98)
+            rgba(38,47,62,.98),
+            rgba(21,27,37,.98)
         );
 
     border-color:
-        rgba(85,170,255,.35);
+        rgba(85,170,255,.30);
 
     box-shadow:
-        0 12px 30px
-        rgba(0,0,0,.22);
+        0 14px 35px
+        rgba(0,0,0,.28);
 
 }
 
@@ -206,16 +237,34 @@
 
     flex:none;
 
-    width:58px;
+    width:64px;
 
-    height:58px;
+    height:64px;
 
     object-fit:cover;
 
     border-radius:50%;
 
     border:2px solid
-        rgba(255,255,255,.08);
+        rgba(255,255,255,.10);
+
+    box-shadow:
+        0 4px 15px
+        rgba(0,0,0,.25);
+
+    transition:
+        transform .2s ease,
+        border-color .2s ease;
+
+}
+
+
+.carteLiker:hover .carteLikerPhoto{
+
+    transform:scale(1.05);
+
+    border-color:
+        rgba(85,170,255,.45);
 
 }
 
@@ -230,8 +279,12 @@
 
     flex:1;
 
+    margin-left:16px;
+
 }
 
+
+/* PSEUDO */
 
 .carteLikerPseudo{
 
@@ -241,53 +294,67 @@
 
     white-space:nowrap;
 
-    font-size:1rem;
+    color:var(--text);
 
-    font-weight:800;
+    font-size:1.05rem;
 
-}
-
-
-.carteLikerDescription{
-
-    margin-top:4px;
-
-    overflow:hidden;
-
-    text-overflow:ellipsis;
-
-    white-space:nowrap;
-
-    color:var(--muted);
-
-    font-size:.86rem;
+    font-weight:850;
 
 }
 
 
 /* =========================================================
-   FLECHE
+   BOUTON VOIR
 ========================================================= */
 
 .carteLikerFleche{
 
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
     flex:none;
+
+    width:36px;
+
+    height:36px;
+
+    margin-left:12px;
 
     color:var(--muted);
 
-    font-size:1.3rem;
+    background:
+        rgba(255,255,255,.055);
+
+    border:1px solid
+        rgba(255,255,255,.07);
+
+    border-radius:50%;
+
+    font-size:1.45rem;
+
+    line-height:1;
 
     transition:
-        color .2s,
-        transform .2s;
+        color .2s ease,
+        background .2s ease,
+        border-color .2s ease,
+        transform .2s ease;
 
 }
 
 
-.carteLiker:hover
-.carteLikerFleche{
+.carteLiker:hover .carteLikerFleche{
 
-    color:var(--text);
+    color:#fff;
+
+    background:
+        rgba(85,170,255,.15);
+
+    border-color:
+        rgba(85,170,255,.30);
 
     transform:translateX(3px);
 
@@ -300,30 +367,35 @@
 
 .aucunLiker{
 
-    padding:60px 20px;
+    padding:65px 20px;
 
     text-align:center;
 
     background:
-        rgba(255,255,255,.035);
+        rgba(255,255,255,.025);
 
-    border:1px solid var(--line);
+    border:1px solid
+        rgba(255,255,255,.07);
 
     border-radius:18px;
 
 }
 
 
-.aucunLiker > :first-child{
+.aucunLikerIcon{
 
-    font-size:40px;
+    font-size:42px;
+
+    margin-bottom:14px;
 
 }
 
 
 .aucunLiker h2{
 
-    margin:12px 0 6px;
+    margin:0 0 7px;
+
+    font-size:1.25rem;
 
 }
 
@@ -346,27 +418,23 @@
     .pageLikers{
 
         padding:
-            25px
+            22px
             14px
             60px;
 
     }
 
 
-    .titreLikers{
+    .retourProfil{
 
-        align-items:flex-start;
+        margin-bottom:32px;
 
     }
 
 
-    .titreLikersIcon{
+    .titreLikers{
 
-        width:48px;
-
-        height:48px;
-
-        font-size:23px;
+        margin-bottom:24px;
 
     }
 
@@ -375,12 +443,52 @@
 
         grid-template-columns:1fr;
 
+        gap:12px;
+
     }
 
 
     .carteLiker{
 
-        padding:12px;
+        min-height:82px;
+
+        padding:13px;
+
+        border-radius:16px;
+
+    }
+
+
+    .carteLikerPhoto{
+
+        width:56px;
+
+        height:56px;
+
+    }
+
+
+    .carteLikerInfos{
+
+        margin-left:13px;
+
+    }
+
+
+    .carteLikerPseudo{
+
+        font-size:1rem;
+
+    }
+
+
+    .carteLikerFleche{
+
+        width:32px;
+
+        height:32px;
+
+        font-size:1.3rem;
 
     }
 

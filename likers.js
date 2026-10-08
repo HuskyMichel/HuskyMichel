@@ -1,13 +1,11 @@
 import { auth, db } from "./firebase.js";
 
-
 import {
     GoogleAuthProvider,
     signInWithPopup,
     signOut,
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
-
 
 import {
     collection,
@@ -17,25 +15,9 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 
-
 /* =========================================================
    ELEMENTS
 ========================================================= */
-
-const loginBtn =
-    document.getElementById("loginBtn");
-
-const profile =
-    document.getElementById("profile");
-
-const avatar =
-    document.getElementById("avatar");
-
-const menu =
-    document.getElementById("menu");
-
-const logout =
-    document.getElementById("logout");
 
 const listeLikers =
     document.getElementById("listeLikers");
@@ -53,7 +35,6 @@ const retourProfil =
     document.getElementById("retourProfil");
 
 
-
 /* =========================================================
    PSEUDO DU PROFIL
 ========================================================= */
@@ -63,186 +44,8 @@ const params =
         window.location.search
     );
 
-
 const pseudoRecherche =
     params.get("pseudo");
-
-
-
-/* =========================================================
-   MENU
-========================================================= */
-
-if(avatar){
-
-    avatar.addEventListener(
-        "click",
-        (event)=>{
-
-            event.stopPropagation();
-
-            menu.style.display =
-                menu.style.display === "block"
-                    ? "none"
-                    : "block";
-
-        }
-    );
-
-}
-
-
-document.addEventListener(
-    "click",
-    (event)=>{
-
-        if(
-            profile &&
-            !profile.contains(event.target)
-        ){
-
-            menu.style.display =
-                "none";
-
-        }
-
-    }
-);
-
-
-
-/* =========================================================
-   CONNEXION
-========================================================= */
-
-if(loginBtn){
-
-    const provider =
-        new GoogleAuthProvider();
-
-
-    provider.setCustomParameters({
-        prompt:"select_account"
-    });
-
-
-    loginBtn.addEventListener(
-        "click",
-        async ()=>{
-
-            try{
-
-                await signInWithPopup(
-                    auth,
-                    provider
-                );
-
-            }
-
-            catch(error){
-
-                console.error(
-                    "Erreur connexion :",
-                    error
-                );
-
-            }
-
-        }
-    );
-
-}
-
-
-
-/* =========================================================
-   DECONNEXION
-========================================================= */
-
-if(logout){
-
-    logout.addEventListener(
-        "click",
-        async ()=>{
-
-            try{
-
-                await signOut(auth);
-
-                menu.style.display =
-                    "none";
-
-            }
-
-            catch(error){
-
-                console.error(
-                    "Erreur déconnexion :",
-                    error
-                );
-
-            }
-
-        }
-    );
-
-}
-
-
-
-/* =========================================================
-   ETAT DU COMPTE
-========================================================= */
-
-onAuthStateChanged(
-    auth,
-    (user)=>{
-
-        if(user){
-
-            if(loginBtn){
-                loginBtn.style.display =
-                    "none";
-            }
-
-            if(profile){
-                profile.style.display =
-                    "block";
-            }
-
-
-            if(
-                avatar &&
-                user.photoURL
-            ){
-
-                avatar.src =
-                    user.photoURL.replace(
-                        "=s96-c",
-                        "=s512-c"
-                    );
-
-            }
-
-        }
-
-        else{
-
-            if(loginBtn){
-                loginBtn.style.display =
-                    "block";
-            }
-
-            if(profile){
-                profile.style.display =
-                    "none";
-            }
-
-        }
-
-    }
-);
-
 
 
 /* =========================================================
@@ -276,7 +79,6 @@ if(retourProfil){
 }
 
 
-
 /* =========================================================
    CHARGER LES LIKES
 ========================================================= */
@@ -295,16 +97,10 @@ async function chargerLikers(){
     try{
 
         /*
-         * IMPORTANT :
-         *
-         * Ton système actuel utilise :
+         * Système actuel :
          *
          * users/{pseudo}/likes/{uid}
-         *
-         * On utilise donc DIRECTEMENT
-         * le pseudo comme document parent.
          */
-
 
         const likesRef =
             collection(
@@ -325,24 +121,30 @@ async function chargerLikers(){
             likesSnapshot.size;
 
 
-
         /* =================================================
            TITRE
         ================================================= */
 
-        titreProfil.textContent =
-            "Personnes qui aiment " +
-            pseudoRecherche;
+        if(titreProfil){
+
+            titreProfil.textContent =
+                "Personnes qui aiment " +
+                pseudoRecherche;
+
+        }
 
 
-        nombreLikers.textContent =
-            nombre +
-            (
-                nombre > 1
-                    ? " personnes aiment ce profil"
-                    : " personne aime ce profil"
-            );
+        if(nombreLikers){
 
+            nombreLikers.textContent =
+                nombre +
+                (
+                    nombre > 1
+                        ? " personnes aiment ce profil"
+                        : " personne aime ce profil"
+                );
+
+        }
 
 
         /* =================================================
@@ -353,24 +155,39 @@ async function chargerLikers(){
             likesSnapshot.empty
         ){
 
-            aucunLiker.style.display =
-                "block";
+            if(aucunLiker){
 
-            listeLikers.innerHTML =
-                "";
+                aucunLiker.style.display =
+                    "block";
+
+            }
+
+            if(listeLikers){
+
+                listeLikers.innerHTML =
+                    "";
+
+            }
 
             return;
 
         }
 
 
-        aucunLiker.style.display =
-            "none";
+        if(aucunLiker){
+
+            aucunLiker.style.display =
+                "none";
+
+        }
 
 
-        listeLikers.innerHTML =
-            "";
+        if(listeLikers){
 
+            listeLikers.innerHTML =
+                "";
+
+        }
 
 
         /* =================================================
@@ -415,7 +232,6 @@ async function chargerLikers(){
                     utilisateurSnap.data();
 
 
-
                 /* =================================================
                    CARTE
                 ================================================= */
@@ -428,7 +244,6 @@ async function chargerLikers(){
 
                 carte.className =
                     "carteLiker";
-
 
 
                 /* =================================================
@@ -455,9 +270,12 @@ async function chargerLikers(){
                     "Utilisateur";
 
 
+                image.loading =
+                    "lazy";
+
 
                 /* =================================================
-                   CONTENU
+                   INFORMATIONS
                 ================================================= */
 
                 const contenu =
@@ -467,8 +285,7 @@ async function chargerLikers(){
 
 
                 contenu.className =
-                    "carteLikerContenu";
-
+                    "carteLikerInfos";
 
 
                 const nom =
@@ -486,31 +303,9 @@ async function chargerLikers(){
                     "Utilisateur";
 
 
-
-                const description =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                description.className =
-                    "carteLikerDescription";
-
-
-                description.textContent =
-                    data.descriptionCourte ||
-                    "Aucune description";
-
-
                 contenu.appendChild(
                     nom
                 );
-
-
-                contenu.appendChild(
-                    description
-                );
-
 
 
                 /* =================================================
@@ -531,7 +326,6 @@ async function chargerLikers(){
                     "›";
 
 
-
                 /* =================================================
                    ASSEMBLAGE
                 ================================================= */
@@ -549,7 +343,6 @@ async function chargerLikers(){
                 carte.appendChild(
                     fleche
                 );
-
 
 
                 /* =================================================
@@ -576,9 +369,13 @@ async function chargerLikers(){
                 );
 
 
-                listeLikers.appendChild(
-                    carte
-                );
+                if(listeLikers){
+
+                    listeLikers.appendChild(
+                        carte
+                    );
+
+                }
 
             }
 
@@ -607,7 +404,6 @@ async function chargerLikers(){
     }
 
 }
-
 
 
 /* =========================================================
@@ -647,7 +443,7 @@ function afficherErreur(){
 
         aucunLiker.innerHTML = `
 
-            <div style="font-size:40px;">
+            <div class="aucunLikerIcon">
                 ❌
             </div>
 
@@ -664,7 +460,6 @@ function afficherErreur(){
     }
 
 }
-
 
 
 /* =========================================================

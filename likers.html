@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="fr">
 
 <head>
@@ -25,11 +24,6 @@
 
 <link
     rel="stylesheet"
-    href="youtube-theme.css"
->
-
-<link
-    rel="stylesheet"
     href="likers.css"
 >
 
@@ -38,106 +32,39 @@
 
 <body>
 
-
-<!-- =======================================================
-     BARRE DU HAUT
-======================================================= -->
-
-<header>
-
-    <div class="logo">
-
-        <img
-            src="Photo de profil/titre.jpg"
-            id="logoAccueil"
-            alt="Accueil"
-        >
-
-    </div>
-
-
-    <div class="account">
-
-        <button id="loginBtn">
-            Se connecter
-        </button>
-
-
-        <div
-            id="profile"
-            class="profile"
-        >
-
-            <img
-                id="avatar"
-                alt="Compte"
-            >
-
-
-            <div
-                id="menu"
-                class="menu"
-            >
-
-                <a href="index.html">
-                    🏠 Accueil
-                </a>
-
-                <a href="creation-profil.html">
-                    ✏️ Modifier mon profil
-                </a>
-
-                <button id="logout">
-                    🚪 Déconnexion
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</header>
-
-
-
-<!-- =======================================================
-     CONTENU
-======================================================= -->
-
 <main class="pageLikers">
 
+
+    <!-- RETOUR AU PROFIL -->
 
     <button
         id="retourProfil"
         class="retourProfil"
         type="button"
     >
-        ← Retour au profil
+        <span>←</span>
+        Retour au profil
     </button>
 
 
+
+    <!-- TITRE -->
+
     <div class="titreLikers">
 
-        <div class="titreLikersIcon">
-            ❤️
-        </div>
+        <h1 id="titreProfil">
+            Personnes qui aiment ce profil
+        </h1>
 
-
-        <div>
-
-            <h1 id="titreProfil">
-                Personnes qui aiment ce profil
-            </h1>
-
-            <p id="nombreLikers">
-                Chargement...
-            </p>
-
-        </div>
+        <p id="nombreLikers">
+            Chargement...
+        </p>
 
     </div>
 
+
+
+    <!-- LISTE -->
 
     <div
         id="listeLikers"
@@ -145,13 +72,18 @@
     ></div>
 
 
+
+    <!-- AUCUN LIKE -->
+
     <div
         id="aucunLiker"
         class="aucunLiker"
         style="display:none;"
     >
 
-        ❤️
+        <div class="aucunLikerIcon">
+            ❤️
+        </div>
 
         <h2>
             Aucun like pour le moment
