@@ -33,7 +33,16 @@ let utilisateurActuel = null;
 let profilActuel = null;
 let profilActuelUid = null;
 
-let visiteurId = localStorage.getItem("huskymichel_visiteur_id");
+
+/* =========================================================
+   IDENTIFIANT VISITEUR
+========================================================= */
+
+let visiteurId =
+    localStorage.getItem(
+        "huskymichel_visiteur_id"
+    );
+
 
 if(!visiteurId){
 
@@ -42,17 +51,23 @@ if(!visiteurId){
         typeof crypto.randomUUID === "function"
     ){
 
-        visiteurId = crypto.randomUUID();
+        visiteurId =
+            crypto.randomUUID();
 
-    }else{
+    }
+
+    else{
 
         visiteurId =
             "visiteur_" +
             Date.now() +
             "_" +
-            Math.random().toString(36).substring(2);
+            Math.random()
+                .toString(36)
+                .substring(2);
 
     }
+
 
     localStorage.setItem(
         "huskymichel_visiteur_id",
@@ -228,10 +243,12 @@ if(!pseudoRecherche){
 
     `;
 
+
     const retourErreur =
         document.getElementById(
             "retourErreur"
         );
+
 
     if(retourErreur){
 
@@ -461,9 +478,25 @@ if(logout){
 
 }
 
+
 /* =========================================================
    ETAT DE CONNEXION
 ========================================================= */
+
+/*
+   IMPORTANT :
+
+   Le profil est chargé par chargerProfil()
+   tout en bas du fichier.
+
+   Ici on ne recharge PAS le profil une deuxième fois.
+
+   On attend simplement que Firebase nous dise
+   si quelqu'un est connecté afin de gérer :
+   - les likes
+   - les favoris
+   - le menu du compte
+*/
 
 onAuthStateChanged(
     auth,
@@ -473,10 +506,6 @@ onAuthStateChanged(
             user;
 
 
-        /* ================================================
-           CONNECTE
-        ================================================ */
-
         if(user){
 
             afficherCompteConnecte(
@@ -485,33 +514,28 @@ onAuthStateChanged(
 
 
             /*
-               On recharge les likes.
+               Le profil est déjà chargé.
+               On peut maintenant vérifier le like.
             */
 
             await chargerLikesProfil();
 
 
             /*
-               On vérifie le favori.
+               Vérification du favori.
             */
 
             await verifierFavoriProfil();
 
 
             /*
-               On charge l'espace privé des favoris
-               si le profil affiché est celui
-               de l'utilisateur connecté.
+               Chargement des favoris privés
+               uniquement si nécessaire.
             */
 
             await chargerFavorisPrives();
 
         }
-
-
-        /* ================================================
-           DECONNECTE
-        ================================================ */
 
         else{
 
@@ -519,16 +543,14 @@ onAuthStateChanged(
 
 
             /*
-               Les likes restent visibles même
-               lorsqu'on est déconnecté.
+               Les likes restent publics.
             */
 
             await chargerLikesProfil();
 
 
             /*
-               Aucun favori personnel accessible
-               sans connexion.
+               Les favoris sont privés.
             */
 
             cacherFavorisPrives();
@@ -790,6 +812,10 @@ async function enregistrerVueProfil(profilId){
 
 }
 
+
+/* =========================================================
+   CHARGER VUES
+========================================================= */
 
 async function chargerVuesProfil(profilId){
 
@@ -1065,8 +1091,8 @@ async function chargerProfil(){
                 Array.isArray(
                     data.categories
                 )
-                ? data.categories
-                : [];
+                    ? data.categories
+                    : [];
 
 
             if(
@@ -1129,8 +1155,8 @@ async function chargerProfil(){
                 Array.isArray(
                     data.reseaux
                 )
-                ? data.reseaux
-                : [];
+                    ? data.reseaux
+                    : [];
 
 
             if(
@@ -1384,10 +1410,9 @@ async function chargerProfil(){
         }
 
 
-        /*
-           Une fois le profil chargé,
-           on vérifie le bouton favori.
-        */
+        /* ==============================================
+           FAVORI
+        ============================================== */
 
         await verifierFavoriProfil();
 
@@ -1467,6 +1492,7 @@ async function chargerProfil(){
 
 }
 
+
 /* =========================================================
    FAVORIS
 ========================================================= */
@@ -1477,12 +1503,15 @@ function mettreBoutonFavoriNonActif(){
         return;
     }
 
+
     boutonFavoriProfil.classList.remove(
         "favoriActif"
     );
 
+
     boutonFavoriProfil.textContent =
         "☆";
+
 
     boutonFavoriProfil.title =
         "Ajouter aux favoris";
@@ -1496,12 +1525,15 @@ function mettreBoutonFavoriActif(){
         return;
     }
 
+
     boutonFavoriProfil.classList.add(
         "favoriActif"
     );
 
+
     boutonFavoriProfil.textContent =
         "★";
+
 
     boutonFavoriProfil.title =
         "Retirer des favoris";
@@ -1515,7 +1547,9 @@ async function verifierFavoriProfil(){
         !boutonFavoriProfil ||
         !profilActuelUid
     ){
+
         return;
+
     }
 
 
@@ -1608,7 +1642,9 @@ async function gererFavoriProfil(){
         !profilActuelUid ||
         !profilActuel
     ){
+
         return;
+
     }
 
 
@@ -1616,7 +1652,9 @@ async function gererFavoriProfil(){
         utilisateurActuel.uid ===
         profilActuelUid
     ){
+
         return;
+
     }
 
 
@@ -1625,7 +1663,9 @@ async function gererFavoriProfil(){
         boutonFavoriProfil.dataset.chargement ===
         "true"
     ){
+
         return;
+
     }
 
 
@@ -1663,6 +1703,7 @@ async function gererFavoriProfil(){
                 favoriRef
             );
 
+
             mettreBoutonFavoriNonActif();
 
         }
@@ -1688,6 +1729,7 @@ async function gererFavoriProfil(){
                 }
             );
 
+
             mettreBoutonFavoriActif();
 
         }
@@ -1703,6 +1745,7 @@ async function gererFavoriProfil(){
             "Erreur lors de la modification du favori :",
             error
         );
+
 
         alert(
             "Impossible de modifier les favoris."
@@ -1797,7 +1840,9 @@ async function chargerFavorisPrives(){
         !sectionFavoris ||
         !listeFavoris
     ){
+
         return;
+
     }
 
 
@@ -1880,7 +1925,9 @@ async function chargerFavorisPrives(){
                 if(
                     !profilSnap.exists()
                 ){
+
                     continue;
+
                 }
 
 
@@ -2046,6 +2093,7 @@ async function chargerFavorisPrives(){
             "Erreur lors du chargement des favoris :",
             error
         );
+
 
         cacherFavorisPrives();
 
@@ -2365,7 +2413,9 @@ async function gererLikeProfil(){
         !boutonLikeProfil ||
         !pseudoRecherche
     ){
+
         return;
+
     }
 
 
@@ -2373,7 +2423,9 @@ async function gererLikeProfil(){
         boutonLikeProfil.dataset.chargement ===
         "true"
     ){
+
         return;
+
     }
 
 
