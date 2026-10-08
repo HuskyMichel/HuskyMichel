@@ -2193,3 +2193,57 @@ if(
     );
 
 }
+
+const music = document.getElementById("backgroundMusic");
+const button = document.getElementById("musicButton");
+
+const playlist = [
+    "Musique 1.mp3",
+    "Musique 2.mp3",
+    "Musique 3.mp3",
+	"Musique 4.mp3",
+	"Musique 5.mp3",
+	"Musique 6.mp3",
+	"Musique 7.mp3",
+	"Musique 8.mp3",
+	"Musique 9.mp3",
+	"Musique 10.mp3",
+	"Musique 11.mp3",
+	"Musique 12.mp3",
+	"Musique 13.mp3",
+	"Musique 14.mp3",
+	"Musique 15.mp3",
+	"Musique 16.mp3",
+	"Musique 17.mp3",
+	"Musique 18.mp3",
+	"Musique 19.mp3",
+	"Musique 20.mp3"
+];
+
+let currentMusic = 0;
+
+// Charge la première musique
+music.src = playlist[currentMusic];
+
+// Quand le bouton est cliqué
+button.addEventListener("click", () => {
+    if (music.paused) {
+        music.play();
+        button.textContent = "🔇 Couper la musique";
+    } else {
+        music.pause();
+        button.textContent = "🎵 Activer la musique";
+    }
+});
+
+// Quand une musique est terminée
+music.addEventListener("ended", () => {
+    currentMusic++;
+
+    if (currentMusic >= playlist.length) {
+        currentMusic = 0;
+    }
+
+    music.src = playlist[currentMusic];
+    music.play();
+});

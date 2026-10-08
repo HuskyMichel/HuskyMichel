@@ -551,3 +551,16 @@ h2 {
         transition-duration: .01ms !important;
     }
 }
+
+#musicButton {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+
+    padding: 10px 16px;
+    border: none;
+    border-radius: 10px;
+
+    cursor: pointer;
+    font-size: 16px;
+}
