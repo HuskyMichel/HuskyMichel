@@ -564,3 +564,187 @@ h2 {
     cursor: pointer;
     font-size: 16px;
 }
+
+/* =========================
+   LECTEUR MUSIQUE
+   ========================= */
+
+.music-player {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+
+    width: min(350px, calc(100vw - 40px));
+    padding: 18px;
+
+    background: rgba(20, 20, 25, 0.92);
+    backdrop-filter: blur(12px);
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
+
+    color: white;
+
+    z-index: 1000;
+}
+
+/* Informations du morceau */
+
+.music-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.music-icon {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+
+    font-size: 20px;
+}
+
+.music-info {
+    min-width: 0;
+    flex: 1;
+}
+
+#trackTitle {
+    font-weight: 600;
+    font-size: 15px;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.music-time {
+    margin-top: 3px;
+
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Barre de progression */
+
+#progressBar {
+    width: 100%;
+    margin: 5px 0 15px;
+
+    cursor: pointer;
+}
+
+/* Contrôles */
+
+.music-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.music-controls button {
+    width: 38px;
+    height: 38px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.music-controls button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.music-controls .play-button {
+    width: 46px;
+    height: 46px;
+
+    background: white;
+    color: #111;
+
+    font-size: 17px;
+}
+
+.music-controls .play-button:hover {
+    background: #f0f0f0;
+}
+
+/* Volume */
+
+.volume-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    margin-left: auto;
+}
+
+#volumeBar {
+    width: 70px;
+}
+
+/* Style général des sliders */
+
+input[type="range"] {
+    appearance: none;
+    height: 4px;
+
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 10px;
+
+    cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+
+    width: 12px;
+    height: 12px;
+
+    border-radius: 50%;
+    background: white;
+
+    cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+
+    border: none;
+    border-radius: 50%;
+    background: white;
+
+    cursor: pointer;
+}
+
+/* Adaptation téléphone */
+
+@media (max-width: 600px) {
+    .music-player {
+        right: 10px;
+        bottom: 10px;
+
+        width: calc(100vw - 20px);
+    }
+
+    .volume-container {
+        display: none;
+    }
+}

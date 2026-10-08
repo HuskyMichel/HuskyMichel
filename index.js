@@ -2195,6 +2195,312 @@ if(
 }
 
 const music = document.getElementById("backgroundMusic");
+
+const playButton = document.getElementById("playButton");
+const previousButton = document.getElementById("previousButton");
+const nextButton = document.getElementById("nextButton");
+
+const progressBar = document.getElementById("progressBar");
+const volumeBar = document.getElementById("volumeBar");
+
+const trackTitle = document.getElementById("trackTitle");
+const currentTimeDisplay = document.getElementById("currentTime");
+const durationDisplay = document.getElementById("duration");
+
+
+/* =========================
+   PLAYLIST
+   ========================= */
+   
+   const playlist = [
+    {
+        src: "musique1.mp3",
+        title: "Carnaval"
+    },
+    {
+        src: "musique2.mp3",
+        title: "Funk & Breakbeat (Upbeat Advertising Happy Cook)"
+    },
+	{
+    src: "musique3.mp3",
+        title: "Dance Playful Night"
+    },
+	{
+    src: "musique4.mp3",
+        title: "Powerful Dramatic Trailer"
+    },
+	{
+    src: "musique5.mp3",
+        title: "Dark"
+    },
+	{
+    src: "musique6.mp3",
+        title: "Powerful Percussion"
+    },
+	{
+    src: "musique7.mp3",
+        title: "Stomp Action Music"
+    },
+	{
+    src: "musique8.mp3",
+        title: "Stomp Drum Percussion"
+    },
+	{
+    src: "musique9.mp3",
+        title: "Escape Your Love (Upbeat Fashion Pop Dance)"
+    },
+	{
+    src: "musique10.mp3",
+        title: "Wonders of the Earth"
+    },
+	{
+    src: "musique11.mp3",
+        title: "Gvidon - Medicine"
+    },
+	{
+    src: "musique12.mp3",
+        title: "Background Music"
+    },
+	{
+    src: "musique13.mp3",
+        title: "Water | Afro-pop Music"
+    },
+	{
+    src: "musique14.mp3",
+        title: "Joyful Rhythm Walk Funk"
+    },
+	{
+    src: "musique15.mp3",
+        title: "Sport - Sports Rock Music"
+    },
+	{
+    src: "musique16.mp3",
+        title: "Suspense Tension - Suspenseful Tense"
+    },
+	{
+    src: "musique17.mp3",
+        title: "Moment of Peace - MickeysCat"
+    },
+	{
+    src: "musique18.mp3",
+        title: "Dramatic Cinematic Documentary"
+    },
+	{
+    src: "musique19.mp3",
+        title: "Football - Football Music"
+    },
+	{
+    src: "musique20.mp3",
+        title: "No Copyright Music"
+    }
+];
+
+let currentMusic = 0;
+
+
+/* =========================
+   CHARGER UNE MUSIQUE
+   ========================= */
+
+function loadTrack(index, autoplay = false) {
+
+    currentMusic = (index + playlist.length) % playlist.length;
+
+    music.src = playlist[currentMusic].src;
+
+    trackTitle.textContent = playlist[currentMusic].title;
+
+    progressBar.value = 0;
+
+    currentTimeDisplay.textContent = "0:00";
+    durationDisplay.textContent = "0:00";
+
+    music.load();
+
+    if (autoplay) {
+        music.play().catch(() => {});
+    }
+
+    updatePlayButton();
+}
+
+
+/* =========================
+   LECTURE / PAUSE
+   ========================= */
+
+playButton.addEventListener("click", () => {
+
+    if (music.paused) {
+
+        music.play().catch(() => {});
+
+    } else {
+
+        music.pause();
+
+    }
+});
+
+
+/* =========================
+   BOUTON PRÉCÉDENT
+   ========================= */
+
+previousButton.addEventListener("click", () => {
+
+    const wasPlaying = !music.paused;
+
+    // Si on est déjà avancé dans le morceau,
+    // le bouton précédent recommence le morceau.
+    if (music.currentTime > 3) {
+
+        music.currentTime = 0;
+
+        return;
+    }
+
+    loadTrack(currentMusic - 1, wasPlaying);
+});
+
+
+/* =========================
+   BOUTON SUIVANT
+   ========================= */
+
+nextButton.addEventListener("click", () => {
+
+    const wasPlaying = !music.paused;
+
+    loadTrack(currentMusic + 1, wasPlaying);
+});
+
+
+/* =========================
+   MUSIQUE TERMINÉE
+   ========================= */
+
+music.addEventListener("ended", () => {
+
+    loadTrack(currentMusic + 1, true);
+
+});
+
+
+/* =========================
+   BOUTON PLAY
+   ========================= */
+
+music.addEventListener("play", () => {
+
+    playButton.textContent = "⏸";
+    playButton.setAttribute("aria-label", "Pause");
+
+});
+
+
+music.addEventListener("pause", () => {
+
+    playButton.textContent = "▶";
+    playButton.setAttribute("aria-label", "Lire");
+
+});
+
+
+/* =========================
+   BARRE DE PROGRESSION
+   ========================= */
+
+music.addEventListener("timeupdate", () => {
+
+    if (!music.duration || !isFinite(music.duration)) {
+        return;
+    }
+
+    const progress =
+        (music.currentTime / music.duration) * 100;
+
+    progressBar.value = progress;
+
+    currentTimeDisplay.textContent =
+        formatTime(music.currentTime);
+
+});
+
+
+/* =========================
+   DURÉE DU MORCEAU
+   ========================= */
+
+music.addEventListener("loadedmetadata", () => {
+
+    if (!isFinite(music.duration)) {
+        return;
+    }
+
+    durationDisplay.textContent =
+        formatTime(music.duration);
+
+});
+
+
+/* =========================
+   DÉPLACER LA POSITION
+   ========================= */
+
+progressBar.addEventListener("input", () => {
+
+    if (!music.duration || !isFinite(music.duration)) {
+        return;
+    }
+
+    music.currentTime =
+        (progressBar.value / 100) * music.duration;
+
+});
+
+
+/* =========================
+   VOLUME
+   ========================= */
+
+volumeBar.addEventListener("input", () => {
+
+    music.volume = volumeBar.value;
+
+});
+
+
+/* =========================
+   FORMAT DU TEMPS
+   ========================= */
+
+function formatTime(seconds) {
+
+    if (!isFinite(seconds)) {
+        return "0:00";
+    }
+
+    const minutes = Math.floor(seconds / 60);
+
+    const remainingSeconds =
+        Math.floor(seconds % 60);
+
+    return `${minutes}:${remainingSeconds
+        .toString()
+        .padStart(2, "0")}`;
+}
+
+
+/* =========================
+   INITIALISATION
+   ========================= */
+
+music.volume = 0.7;
+
+loadTrack(0, false);
+
+const music = document.getElementById("backgroundMusic");
 const button = document.getElementById("musicButton");
 
 const playlist = [
