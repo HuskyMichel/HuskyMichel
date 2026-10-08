@@ -124,6 +124,137 @@ function afficherPhotoUtilisateur(user){
 
 
 /* =========================================================
+   CREER BOUTON SUPPRESSION
+========================================================= */
+
+function creerBoutonSuppression(){
+
+    if(
+        document.getElementById(
+            "supprimerCompte"
+        )
+    ){
+
+        return;
+
+    }
+
+
+    const container =
+        document.createElement(
+            "div"
+        );
+
+
+    container.id =
+        "suppressionCompteContainer";
+
+
+    const bouton =
+        document.createElement(
+            "button"
+        );
+
+
+    bouton.type =
+        "button";
+
+
+    bouton.id =
+        "supprimerCompte";
+
+
+    bouton.textContent =
+        "🗑️ Supprimer mon compte";
+
+
+    bouton.addEventListener(
+        "click",
+        supprimerCompte
+    );
+
+
+    container.appendChild(
+        bouton
+    );
+
+
+    if(
+        saveProfile &&
+        saveProfile.parentElement
+    ){
+
+        saveProfile.parentElement.appendChild(
+            container
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   SUPPRIMER SOUS-COLLECTION
+========================================================= */
+
+async function supprimerSousCollection(
+    nomCollection
+){
+
+    if(
+        !utilisateurActuel
+    ){
+
+        return;
+
+    }
+
+
+    const reference =
+        collection(
+            db,
+            "users",
+            utilisateurActuel.uid,
+            nomCollection
+        );
+
+
+    const snapshot =
+        await getDocs(
+            reference
+        );
+
+
+    const suppressions = [];
+
+
+    snapshot.forEach(
+        documentSnapshot=>{
+
+            suppressions.push(
+                deleteDoc(
+                    doc(
+                        db,
+                        "users",
+                        utilisateurActuel.uid,
+                        nomCollection,
+                        documentSnapshot.id
+                    )
+                )
+            );
+
+        }
+    );
+
+
+    await Promise.all(
+        suppressions
+    );
+
+}
+
+
+/* =========================================================
    SUPPRIMER COMPTE
 ========================================================= */
 
