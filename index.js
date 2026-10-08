@@ -35,6 +35,12 @@ const menu =
 
 const logout =
     document.getElementById("logout");
+	
+const monProfil =
+    document.querySelector('#menu a');
+
+const changePhoto =
+    document.getElementById("changePhoto");
 
 const listeProfils =
     document.getElementById("listeProfils");
@@ -147,6 +153,96 @@ document.addEventListener(
     }
 );
 
+/* =========================================================
+   MON PROFIL
+========================================================= */
+
+if(monProfil){
+
+    monProfil.addEventListener(
+        "click",
+        async(event)=>{
+
+            event.preventDefault();
+
+            if(!utilisateurActuel){
+                return;
+            }
+
+            try{
+
+                const profilRef =
+                    doc(
+                        db,
+                        "users",
+                        utilisateurActuel.uid
+                    );
+
+                const profilSnap =
+                    await getDoc(profilRef);
+
+                if(!profilSnap.exists()){
+
+                    window.location.href =
+                        "creation-profil.html";
+
+                    return;
+                }
+
+                const data =
+                    profilSnap.data();
+
+                const pseudo =
+                    data.pseudo;
+
+                if(!pseudo){
+                    return;
+                }
+
+                window.location.href =
+                    "profil.html?pseudo=" +
+                    encodeURIComponent(pseudo);
+
+            }
+
+            catch(error){
+
+                console.error(
+                    "Erreur lors de l'ouverture du profil :",
+                    error
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   CHANGER LA PHOTO
+========================================================= */
+
+if(changePhoto){
+
+    changePhoto.addEventListener(
+        "click",
+        (event)=>{
+
+            event.preventDefault();
+
+            if(!utilisateurActuel){
+                return;
+            }
+
+            window.location.href =
+                "creation-profil.html";
+
+        }
+    );
+
+}
 
 /* =========================================================
    CONNEXION
