@@ -132,6 +132,10 @@ const voirLikers =
 const compteurVuesProfil =
     document.getElementById("compteurVuesProfil");
 	
+/* =========================================================
+   VOIR LES PERSONNES QUI ONT LIKE
+========================================================= */
+
 if(voirLikers){
 
     voirLikers.addEventListener(

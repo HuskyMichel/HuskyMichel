@@ -2,24 +2,18 @@ import { auth, db } from "./firebase.js";
 
 
 import {
-
     GoogleAuthProvider,
     signInWithPopup,
     signOut,
     onAuthStateChanged
-
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 
 import {
-
     collection,
-    query,
-    where,
     getDocs,
     doc,
     getDoc
-
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 
@@ -43,7 +37,6 @@ const menu =
 const logout =
     document.getElementById("logout");
 
-
 const listeLikers =
     document.getElementById("listeLikers");
 
@@ -62,7 +55,7 @@ const retourProfil =
 
 
 /* =========================================================
-   PARAMETRE PROFIL
+   PSEUDO DU PROFIL
 ========================================================= */
 
 const params =
@@ -77,22 +70,26 @@ const pseudoRecherche =
 
 
 /* =========================================================
-   MENU COMPTE
+   MENU
 ========================================================= */
 
-avatar.addEventListener(
-    "click",
-    (event)=>{
+if(avatar){
 
-        event.stopPropagation();
+    avatar.addEventListener(
+        "click",
+        (event)=>{
 
-        menu.style.display =
-            menu.style.display === "block"
-                ? "none"
-                : "block";
+            event.stopPropagation();
 
-    }
-);
+            menu.style.display =
+                menu.style.display === "block"
+                    ? "none"
+                    : "block";
+
+        }
+    );
+
+}
 
 
 document.addEventListener(
@@ -100,9 +97,8 @@ document.addEventListener(
     (event)=>{
 
         if(
-            !profile.contains(
-                event.target
-            )
+            profile &&
+            !profile.contains(event.target)
         ){
 
             menu.style.display =
@@ -119,39 +115,43 @@ document.addEventListener(
    CONNEXION
 ========================================================= */
 
-const provider =
-    new GoogleAuthProvider();
+if(loginBtn){
+
+    const provider =
+        new GoogleAuthProvider();
 
 
-provider.setCustomParameters({
-    prompt:"select_account"
-});
+    provider.setCustomParameters({
+        prompt:"select_account"
+    });
 
 
-loginBtn.addEventListener(
-    "click",
-    async ()=>{
+    loginBtn.addEventListener(
+        "click",
+        async ()=>{
 
-        try{
+            try{
 
-            await signInWithPopup(
-                auth,
-                provider
-            );
+                await signInWithPopup(
+                    auth,
+                    provider
+                );
+
+            }
+
+            catch(error){
+
+                console.error(
+                    "Erreur connexion :",
+                    error
+                );
+
+            }
 
         }
+    );
 
-        catch(error){
-
-            console.error(
-                "Erreur connexion :",
-                error
-            );
-
-        }
-
-    }
-);
+}
 
 
 
@@ -159,35 +159,39 @@ loginBtn.addEventListener(
    DECONNEXION
 ========================================================= */
 
-logout.addEventListener(
-    "click",
-    async ()=>{
+if(logout){
 
-        try{
+    logout.addEventListener(
+        "click",
+        async ()=>{
 
-            await signOut(auth);
+            try{
 
-            menu.style.display =
-                "none";
+                await signOut(auth);
+
+                menu.style.display =
+                    "none";
+
+            }
+
+            catch(error){
+
+                console.error(
+                    "Erreur déconnexion :",
+                    error
+                );
+
+            }
 
         }
+    );
 
-        catch(error){
-
-            console.error(
-                "Erreur déconnexion :",
-                error
-            );
-
-        }
-
-    }
-);
+}
 
 
 
 /* =========================================================
-   ETAT UTILISATEUR
+   ETAT DU COMPTE
 ========================================================= */
 
 onAuthStateChanged(
@@ -196,14 +200,21 @@ onAuthStateChanged(
 
         if(user){
 
-            loginBtn.style.display =
-                "none";
+            if(loginBtn){
+                loginBtn.style.display =
+                    "none";
+            }
 
-            profile.style.display =
-                "block";
+            if(profile){
+                profile.style.display =
+                    "block";
+            }
 
 
-            if(user.photoURL){
+            if(
+                avatar &&
+                user.photoURL
+            ){
 
                 avatar.src =
                     user.photoURL.replace(
@@ -217,11 +228,15 @@ onAuthStateChanged(
 
         else{
 
-            loginBtn.style.display =
-                "block";
+            if(loginBtn){
+                loginBtn.style.display =
+                    "block";
+            }
 
-            profile.style.display =
-                "none";
+            if(profile){
+                profile.style.display =
+                    "none";
+            }
 
         }
 
@@ -231,35 +246,39 @@ onAuthStateChanged(
 
 
 /* =========================================================
-   RETOUR
+   RETOUR AU PROFIL
 ========================================================= */
 
-retourProfil.addEventListener(
-    "click",
-    ()=>{
+if(retourProfil){
 
-        if(!pseudoRecherche){
+    retourProfil.addEventListener(
+        "click",
+        ()=>{
+
+            if(!pseudoRecherche){
+
+                window.location.href =
+                    "index.html";
+
+                return;
+
+            }
 
             window.location.href =
-                "index.html";
-
-            return;
+                "profil.html?pseudo=" +
+                encodeURIComponent(
+                    pseudoRecherche
+                );
 
         }
+    );
 
-        window.location.href =
-            "profil.html?pseudo=" +
-            encodeURIComponent(
-                pseudoRecherche
-            );
-
-    }
-);
+}
 
 
 
 /* =========================================================
-   CHARGER LES LIKERS
+   CHARGER LES LIKES
 ========================================================= */
 
 async function chargerLikers(){
@@ -276,77 +295,22 @@ async function chargerLikers(){
     try{
 
         /*
-           On retrouve le profil
-           grâce à son pseudo.
-        */
+         * IMPORTANT :
+         *
+         * Ton système actuel utilise :
+         *
+         * users/{pseudo}/likes/{uid}
+         *
+         * On utilise donc DIRECTEMENT
+         * le pseudo comme document parent.
+         */
 
-        const profilQuery =
-            query(
-                collection(
-                    db,
-                    "users"
-                ),
-
-                where(
-                    "pseudo",
-                    "==",
-                    pseudoRecherche
-                )
-            );
-
-
-        const profilSnapshot =
-            await getDocs(
-                profilQuery
-            );
-
-
-        if(
-            profilSnapshot.empty
-        ){
-
-            afficherErreur();
-
-            return;
-
-        }
-
-
-        const profilDoc =
-            profilSnapshot.docs[0];
-
-
-        const profilData =
-            profilDoc.data();
-
-
-        const profilUid =
-            profilDoc.id;
-
-
-
-        /* ==============================================
-           TITRE
-        ============================================== */
-
-        titreProfil.textContent =
-            "Personnes qui aiment " +
-            (
-                profilData.pseudo ||
-                pseudoRecherche
-            );
-
-
-
-        /* ==============================================
-           RECUPERER LES LIKES
-        ============================================== */
 
         const likesRef =
             collection(
                 db,
                 "users",
-                profilUid,
+                pseudoRecherche,
                 "likes"
             );
 
@@ -361,6 +325,16 @@ async function chargerLikers(){
             likesSnapshot.size;
 
 
+
+        /* =================================================
+           TITRE
+        ================================================= */
+
+        titreProfil.textContent =
+            "Personnes qui aiment " +
+            pseudoRecherche;
+
+
         nombreLikers.textContent =
             nombre +
             (
@@ -371,9 +345,9 @@ async function chargerLikers(){
 
 
 
-        /* ==============================================
+        /* =================================================
            AUCUN LIKE
-        ============================================== */
+        ================================================= */
 
         if(
             likesSnapshot.empty
@@ -390,14 +364,18 @@ async function chargerLikers(){
         }
 
 
+        aucunLiker.style.display =
+            "none";
 
-        /* ==============================================
-           CREER LES CARTES
-        ============================================== */
 
         listeLikers.innerHTML =
             "";
 
+
+
+        /* =================================================
+           CHARGER CHAQUE PERSONNE
+        ================================================= */
 
         for(
             const likeDoc
@@ -437,6 +415,11 @@ async function chargerLikers(){
                     utilisateurSnap.data();
 
 
+
+                /* =================================================
+                   CARTE
+                ================================================= */
+
                 const carte =
                     document.createElement(
                         "div"
@@ -448,7 +431,9 @@ async function chargerLikers(){
 
 
 
-                /* PHOTO */
+                /* =================================================
+                   PHOTO
+                ================================================= */
 
                 const image =
                     document.createElement(
@@ -462,7 +447,7 @@ async function chargerLikers(){
 
                 image.src =
                     data.photo ||
-                    "logo.jpg";
+                    "Photo de profil/titre.jpg";
 
 
                 image.alt =
@@ -471,16 +456,18 @@ async function chargerLikers(){
 
 
 
-                /* INFORMATIONS */
+                /* =================================================
+                   CONTENU
+                ================================================= */
 
-                const infos =
+                const contenu =
                     document.createElement(
                         "div"
                     );
 
 
-                infos.className =
-                    "carteLikerInfos";
+                contenu.className =
+                    "carteLikerContenu";
 
 
 
@@ -512,22 +499,23 @@ async function chargerLikers(){
 
                 description.textContent =
                     data.descriptionCourte ||
-                    "Profil HuskyMichel";
+                    "Aucune description";
 
 
-
-                infos.appendChild(
+                contenu.appendChild(
                     nom
                 );
 
 
-                infos.appendChild(
+                contenu.appendChild(
                     description
                 );
 
 
 
-                /* FLECHE */
+                /* =================================================
+                   FLECHE
+                ================================================= */
 
                 const fleche =
                     document.createElement(
@@ -540,19 +528,23 @@ async function chargerLikers(){
 
 
                 fleche.textContent =
-                    "→";
+                    "›";
 
 
 
-                /* ASSEMBLAGE */
+                /* =================================================
+                   ASSEMBLAGE
+                ================================================= */
 
                 carte.appendChild(
                     image
                 );
 
+
                 carte.appendChild(
-                    infos
+                    contenu
                 );
+
 
                 carte.appendChild(
                     fleche
@@ -560,7 +552,9 @@ async function chargerLikers(){
 
 
 
-                /* CLIC */
+                /* =================================================
+                   CLIC
+                ================================================= */
 
                 carte.addEventListener(
                     "click",
@@ -604,7 +598,7 @@ async function chargerLikers(){
     catch(error){
 
         console.error(
-            "Erreur chargement likers :",
+            "Erreur lors du chargement des likes :",
             error
         );
 
@@ -622,39 +616,59 @@ async function chargerLikers(){
 
 function afficherErreur(){
 
-    titreProfil.textContent =
-        "Profil introuvable";
+    if(titreProfil){
 
-    nombreLikers.textContent =
-        "";
+        titreProfil.textContent =
+            "Profil introuvable";
 
-    listeLikers.innerHTML =
-        "";
+    }
 
-    aucunLiker.style.display =
-        "block";
 
-    aucunLiker.innerHTML = `
+    if(nombreLikers){
 
-        ❌
+        nombreLikers.textContent =
+            "";
 
-        <h2>
-            Impossible de trouver ce profil
-        </h2>
+    }
 
-        <p>
-            Retourne à l'accueil pour choisir
-            un autre profil.
-        </p>
 
-    `;
+    if(listeLikers){
+
+        listeLikers.innerHTML =
+            "";
+
+    }
+
+
+    if(aucunLiker){
+
+        aucunLiker.style.display =
+            "block";
+
+        aucunLiker.innerHTML = `
+
+            <div style="font-size:40px;">
+                ❌
+            </div>
+
+            <h2>
+                Impossible de charger les likes
+            </h2>
+
+            <p>
+                Retourne au profil et réessaie.
+            </p>
+
+        `;
+
+    }
 
 }
 
 
 
 /* =========================================================
-   DEMARRAGE
+   LANCEMENT
 ========================================================= */
 
 chargerLikers();
