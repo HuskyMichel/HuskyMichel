@@ -124,145 +124,12 @@ function afficherPhotoUtilisateur(user){
 
 
 /* =========================================================
-   CREER BOUTON SUPPRESSION
-========================================================= */
-
-function creerBoutonSuppression(){
-
-    if(
-        document.getElementById(
-            "supprimerCompte"
-        )
-    ){
-
-        return;
-
-    }
-
-
-    const container =
-        document.createElement(
-            "div"
-        );
-
-
-    container.id =
-        "suppressionCompteContainer";
-
-
-    const bouton =
-        document.createElement(
-            "button"
-        );
-
-
-    bouton.type =
-        "button";
-
-
-    bouton.id =
-        "supprimerCompte";
-
-
-    bouton.textContent =
-        "🗑️ Supprimer mon compte";
-
-
-    bouton.addEventListener(
-        "click",
-        supprimerCompte
-    );
-
-
-    container.appendChild(
-        bouton
-    );
-
-
-    if(
-        saveProfile &&
-        saveProfile.parentElement
-    ){
-
-        saveProfile.parentElement.appendChild(
-            container
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   SUPPRIMER SOUS-COLLECTION
-========================================================= */
-
-async function supprimerSousCollection(
-    nomCollection
-){
-
-    if(
-        !utilisateurActuel
-    ){
-
-        return;
-
-    }
-
-
-    const reference =
-        collection(
-            db,
-            "users",
-            utilisateurActuel.uid,
-            nomCollection
-        );
-
-
-    const snapshot =
-        await getDocs(
-            reference
-        );
-
-
-    const suppressions = [];
-
-
-    snapshot.forEach(
-        documentSnapshot=>{
-
-            suppressions.push(
-                deleteDoc(
-                    doc(
-                        db,
-                        "users",
-                        utilisateurActuel.uid,
-                        nomCollection,
-                        documentSnapshot.id
-                    )
-                )
-            );
-
-        }
-    );
-
-
-    await Promise.all(
-        suppressions
-    );
-
-}
-
-
-/* =========================================================
    SUPPRIMER COMPTE
 ========================================================= */
 
 async function supprimerCompte(){
 
-    if(
-        !utilisateurActuel
-    ){
+    if(!utilisateurActuel){
 
         alert(
             "Aucun utilisateur connecté."
@@ -294,9 +161,7 @@ async function supprimerCompte(){
         );
 
 
-    if(
-        !confirmation
-    ){
+    if(!confirmation){
 
         return;
 
@@ -323,9 +188,7 @@ async function supprimerCompte(){
         );
 
 
-    if(
-        verification !== "SUPPRIMER"
-    ){
+    if(verification !== "SUPPRIMER"){
 
         alert(
             "Suppression annulée."
@@ -356,9 +219,7 @@ async function supprimerCompte(){
         );
 
 
-    if(
-        !derniereConfirmation
-    ){
+    if(!derniereConfirmation){
 
         return;
 
@@ -373,11 +234,10 @@ async function supprimerCompte(){
 
     if(bouton){
 
-        bouton.disabled =
-            true;
+        bouton.disabled = true;
 
         bouton.textContent =
-            "⏳ Vérification...";
+            "⏳ Suppression du compte...";
 
     }
 
@@ -385,106 +245,27 @@ async function supprimerCompte(){
     try{
 
         /*
-           =================================================
-           ETAPE 1
-           Vérifier d'abord que Firebase permet réellement
-           de supprimer le compte.
-           =================================================
-        */
+           ==========================================
+           IMPORTANT
+           ==========================================
 
-        /*
-           On effectue une tentative de suppression
-           uniquement après toutes les confirmations.
-
-           IMPORTANT :
-           Si Firebase demande une reconnexion récente,
-           aucune donnée Firestore n'est supprimée avant.
-        */
-
-        if(bouton){
-
-            bouton.textContent =
-                "⏳ Suppression du compte...";
-
-        }
-
-
-        /*
-           =================================================
-           ETAPE 2
-           SUPPRESSION DU COMPTE AUTHENTIFICATION
-           =================================================
-        */
-
-        await deleteUser(
-            utilisateurActuel
-        );
-
-
-        /*
-           Si on arrive ici, le compte Firebase Auth
-           a bien été supprimé.
-        */
-
-
-        console.log(
-            "Compte Firebase Authentication supprimé."
-        );
-
-
-        /*
-           =================================================
-           ETAPE 3
-           SUPPRESSION DU PROFIL FIRESTORE
-           =================================================
+           On sauvegarde le UID AVANT toute suppression.
+           L'utilisateur reste connecté pendant toutes
+           les opérations Firestore.
         */
 
         const uid =
             utilisateurActuel.uid;
 
 
-        const profilRef =
-            doc(
-                db,
-                "users",
-                uid
-            );
-
-
-        await deleteDoc(
-            profilRef
-        );
-
-
-        console.log(
-            "Document users supprimé."
-        );
-
-
         /*
-           =================================================
-           ETAPE 4
+           ==========================================
+           ETAPE 1
            SUPPRESSION DES SOUS-COLLECTIONS
-           =================================================
-        */
-
-        /*
-           Le compte Auth étant déjà supprimé,
-           l'utilisateur ne pourra normalement plus
-           accéder à ces données.
-
-           On tente néanmoins de nettoyer les sous-collections
-           prévues si les règles Firestore l'autorisent.
+           ==========================================
         */
 
         try{
-
-            /*
-               Il est possible que Firebase refuse ici
-               car l'utilisateur n'est plus authentifié.
-
-               Dans ce cas, on ne bloque pas la redirection.
-            */
 
             await supprimerSousCollection(
                 "likes"
@@ -521,10 +302,73 @@ async function supprimerCompte(){
 
 
         /*
-           =================================================
-           ETAPE 5
-           REDIRECTION
-           =================================================
+           ==========================================
+           ETAPE 2
+           SUPPRESSION DU PROFIL FIRESTORE
+           ==========================================
+        */
+
+        if(bouton){
+
+            bouton.textContent =
+                "⏳ Suppression du profil...";
+
+        }
+
+
+        const profilRef =
+            doc(
+                db,
+                "users",
+                uid
+            );
+
+
+        await deleteDoc(
+            profilRef
+        );
+
+
+        console.log(
+            "Document users supprimé."
+        );
+
+
+        /*
+           ==========================================
+           ETAPE 3
+           SUPPRESSION DU COMPTE FIREBASE
+           ==========================================
+        */
+
+        if(bouton){
+
+            bouton.textContent =
+                "⏳ Déconnexion...";
+
+        }
+
+
+        /*
+           L'utilisateur est encore connecté ici,
+           donc deleteUser peut fonctionner.
+        */
+
+        await deleteUser(
+            utilisateurActuel
+        );
+
+
+        console.log(
+            "Compte Firebase Authentication supprimé."
+        );
+
+
+        /*
+           ==========================================
+           ETAPE 4
+           SUCCÈS
+           ==========================================
         */
 
         alert(
@@ -536,6 +380,7 @@ async function supprimerCompte(){
             "index.html";
 
     }
+
 
     catch(error){
 
@@ -587,8 +432,7 @@ async function supprimerCompte(){
 
         if(bouton){
 
-            bouton.disabled =
-                false;
+            bouton.disabled = false;
 
             bouton.textContent =
                 "🗑️ Supprimer mon compte";
@@ -2343,3 +2187,5 @@ if(
 console.log(
     "Système de création de profil prêt."
 );
+
+supprimerCompte
