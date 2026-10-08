@@ -1,0 +1,387 @@
+/* =========================================================
+   PAGE LIKERS
+========================================================= */
+
+.pageLikers{
+
+    width:min(1000px,100%);
+
+    margin:0 auto;
+
+    padding:
+        40px
+        24px
+        80px;
+
+}
+
+
+/* =========================================================
+   RETOUR
+========================================================= */
+
+.retourProfil{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    margin-bottom:30px;
+
+    padding:10px 15px;
+
+    color:var(--text);
+
+    background:rgba(255,255,255,.07);
+
+    border:1px solid var(--line);
+
+    border-radius:10px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:
+        background .2s,
+        transform .2s;
+
+}
+
+
+.retourProfil:hover{
+
+    background:rgba(255,255,255,.12);
+
+    transform:translateX(-3px);
+
+}
+
+
+/* =========================================================
+   TITRE
+========================================================= */
+
+.titreLikers{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+    margin-bottom:30px;
+
+}
+
+
+.titreLikersIcon{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    width:58px;
+
+    height:58px;
+
+    background:rgba(255,70,90,.12);
+
+    border:1px solid rgba(255,70,90,.25);
+
+    border-radius:16px;
+
+    font-size:28px;
+
+}
+
+
+.titreLikers h1{
+
+    margin:0;
+
+    font-size:clamp(1.5rem,4vw,2.2rem);
+
+}
+
+
+.titreLikers p{
+
+    margin:5px 0 0;
+
+    color:var(--muted);
+
+    font-weight:650;
+
+}
+
+
+/* =========================================================
+   LISTE
+========================================================= */
+
+.listeLikers{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fill,
+            minmax(280px,1fr)
+        );
+
+    gap:14px;
+
+}
+
+
+/* =========================================================
+   CARTE LIKER
+========================================================= */
+
+.carteLiker{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+    padding:14px;
+
+    color:var(--text);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(31,38,50,.95),
+            rgba(21,26,35,.95)
+        );
+
+    border:1px solid var(--line);
+
+    border-radius:16px;
+
+    cursor:pointer;
+
+    transition:
+        transform .2s,
+        background .2s,
+        border-color .2s,
+        box-shadow .2s;
+
+}
+
+
+.carteLiker:hover{
+
+    transform:translateY(-3px);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(40,48,62,.98),
+            rgba(25,31,41,.98)
+        );
+
+    border-color:
+        rgba(85,170,255,.35);
+
+    box-shadow:
+        0 12px 30px
+        rgba(0,0,0,.22);
+
+}
+
+
+/* =========================================================
+   PHOTO
+========================================================= */
+
+.carteLikerPhoto{
+
+    flex:none;
+
+    width:58px;
+
+    height:58px;
+
+    object-fit:cover;
+
+    border-radius:50%;
+
+    border:2px solid
+        rgba(255,255,255,.08);
+
+}
+
+
+/* =========================================================
+   INFORMATIONS
+========================================================= */
+
+.carteLikerInfos{
+
+    min-width:0;
+
+    flex:1;
+
+}
+
+
+.carteLikerPseudo{
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+
+    white-space:nowrap;
+
+    font-size:1rem;
+
+    font-weight:800;
+
+}
+
+
+.carteLikerDescription{
+
+    margin-top:4px;
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+
+    white-space:nowrap;
+
+    color:var(--muted);
+
+    font-size:.86rem;
+
+}
+
+
+/* =========================================================
+   FLECHE
+========================================================= */
+
+.carteLikerFleche{
+
+    flex:none;
+
+    color:var(--muted);
+
+    font-size:1.3rem;
+
+    transition:
+        color .2s,
+        transform .2s;
+
+}
+
+
+.carteLiker:hover
+.carteLikerFleche{
+
+    color:var(--text);
+
+    transform:translateX(3px);
+
+}
+
+
+/* =========================================================
+   AUCUN LIKE
+========================================================= */
+
+.aucunLiker{
+
+    padding:60px 20px;
+
+    text-align:center;
+
+    background:
+        rgba(255,255,255,.035);
+
+    border:1px solid var(--line);
+
+    border-radius:18px;
+
+}
+
+
+.aucunLiker > :first-child{
+
+    font-size:40px;
+
+}
+
+
+.aucunLiker h2{
+
+    margin:12px 0 6px;
+
+}
+
+
+.aucunLiker p{
+
+    margin:0;
+
+    color:var(--muted);
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media(max-width:650px){
+
+    .pageLikers{
+
+        padding:
+            25px
+            14px
+            60px;
+
+    }
+
+
+    .titreLikers{
+
+        align-items:flex-start;
+
+    }
+
+
+    .titreLikersIcon{
+
+        width:48px;
+
+        height:48px;
+
+        font-size:23px;
+
+    }
+
+
+    .listeLikers{
+
+        grid-template-columns:1fr;
+
+    }
+
+
+    .carteLiker{
+
+        padding:12px;
+
+    }
+
+}

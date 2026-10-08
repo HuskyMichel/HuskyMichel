@@ -126,11 +126,32 @@ const boutonLikeProfil =
 const compteurLikesProfil =
     document.getElementById("compteurLikesProfil");
 
-const listeLikers =
-    document.getElementById("listeLikers");
+const voirLikers =
+    document.getElementById("voirLikers");
 
 const compteurVuesProfil =
     document.getElementById("compteurVuesProfil");
+	
+if(voirLikers){
+
+    voirLikers.addEventListener(
+        "click",
+        ()=>{
+
+            if(!pseudoRecherche){
+                return;
+            }
+
+            window.location.href =
+                "likers.html?pseudo=" +
+                encodeURIComponent(
+                    pseudoRecherche
+                );
+
+        }
+    );
+
+}
 
 
 /* =========================================================
@@ -2460,42 +2481,6 @@ async function chargerLikersProfil(){
     }
 
 }
-
-
-/* =========================================================
-   CHARGER LES LIKES
-========================================================= */
-
-async function chargerLikesProfil(){
-
-    if(
-        !pseudoRecherche
-    ){
-
-        return;
-
-    }
-
-
-    try{
-
-        const likesRef =
-            collection(
-                db,
-                "users",
-                pseudoRecherche,
-                "likes"
-            );
-
-
-        const snapshot =
-            await getDocs(
-                likesRef
-            );
-
-
-        const nombre =
-            snapshot.size;
 
 
         /* ==============================================
