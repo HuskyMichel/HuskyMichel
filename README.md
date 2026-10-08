@@ -1,2 +1,2 @@
-# HuskyMichel-site
+# HuskyMichel
 Site officiel de HuskyMichel
