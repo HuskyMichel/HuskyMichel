@@ -14,6 +14,7 @@ import {
     getDoc,
     setDoc,
     deleteDoc
+	onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 
@@ -44,6 +45,103 @@ const changePhoto =
 
 const listeProfils =
     document.getElementById("listeProfils");
+	
+	/* =========================================================
+   DIRECTS YOUTUBE
+========================================================= */
+
+const sectionDirects =
+    document.getElementById("sectionDirects");
+
+const listeDirects =
+    document.getElementById("listeDirects");
+
+
+function afficherDirects(snapshot) {
+
+    if (!sectionDirects || !listeDirects) {
+        return;
+    }
+
+    listeDirects.replaceChildren();
+
+    const directs = [];
+
+    snapshot.forEach((documentDirect) => {
+
+        const data = documentDirect.data();
+
+        if (data.isLive === true && data.liveUrl) {
+            directs.push(data);
+        }
+
+    });
+
+    if (directs.length === 0) {
+        sectionDirects.style.display = "none";
+        return;
+    }
+
+    sectionDirects.style.display = "block";
+
+    directs.forEach((direct) => {
+
+        const carte = document.createElement("article");
+        carte.className = "carteDirect";
+
+        const miniature = document.createElement("img");
+        miniature.className = "carteDirectMiniature";
+        miniature.src = direct.thumbnail || "";
+        miniature.alt = "Miniature du direct de " + (direct.pseudo || "Créateur");
+        miniature.loading = "lazy";
+
+        const badge = document.createElement("span");
+        badge.className = "badgeLive";
+        badge.textContent = "🔴 LIVE";
+
+        const infos = document.createElement("div");
+        infos.className = "carteDirectInfos";
+
+        const pseudo = document.createElement("h3");
+        pseudo.className = "carteDirectPseudo";
+        pseudo.textContent = direct.pseudo || "Créateur";
+
+        const bouton = document.createElement("a");
+        bouton.className = "boutonRegarderDirect";
+        bouton.href = direct.liveUrl;
+        bouton.target = "_blank";
+        bouton.rel = "noopener noreferrer";
+        bouton.textContent = "▶ Regarder le direct";
+
+        infos.append(pseudo, bouton);
+        carte.append(miniature, badge, infos);
+        listeDirects.appendChild(carte);
+
+    });
+
+}
+
+
+/* Écouter les changements dans Firebase */
+
+if (sectionDirects && listeDirects) {
+
+    onSnapshot(
+        collection(db, "youtubeLiveCache"),
+
+        (snapshot) => {
+            afficherDirects(snapshot);
+        },
+
+        (error) => {
+            console.error(
+                "Erreur de chargement des directs :",
+                error
+            );
+        }
+    );
+
+}
 
 const recherche =
     document.getElementById("rechercheProfil");
@@ -2371,7 +2469,87 @@ const durationDisplay = document.getElementById("duration");
 	{
     src: "musique40.mp3",
         title: "Inspiring Cinematic Music"
-    }
+    },
+	{
+    src: "musique41.mp3",
+        title: "Running Night"
+    },
+	{
+    src: "musique42.mp3",
+        title: "Sweet Life (Luxury Chill)"
+    },
+	{
+    src: "musique43.mp3",
+        title: "Music free"
+    },
+	{
+    src: "musique44.mp3",
+        title: "Fresh"
+    },
+	{
+    src: "musique45.mp3",
+        title: "Groovy Vibe"
+    },
+	{
+    src: "musique46.mp3",
+        title: "Retro Lounge"
+    },
+	{
+    src: "musique47.mp3",
+        title: "Honey Kisses"
+    },
+	{
+    src: "musique48.mp3",
+        title: "Sandbreaker"
+    },
+	{
+    src: "musique49.mp3",
+        title: "Tell Me What"
+    },
+	{
+    src: "musique50.mp3",
+        title: "Embrace (Soft background beat no copyright)"
+    },
+	{
+    src: "musique51.mp3",
+        title: "Dark Cyberpunk I Free Background Music I Free Music Lab Release"
+    },
+	{
+    src: "musique52.mp3",
+        title: "For P"
+    },
+	{
+    src: "musique53.mp3",
+        title: "Hype | Drill Music"
+    },
+	{
+    src: "musique54.mp3",
+        title: "Cascade Breathe (Future Garage)"
+    },
+	{
+    src: "musique55.mp3",
+        title: "The Last Point (Beat, Electronic, Digital)"
+    },
+	{
+    src: "musique56.mp3",
+        title: "EONA - Emotional Ambient Pop"
+    },
+	{
+    src: "musique57.mp3",
+        title: "Background Music - New Age Nature"
+    },
+	{
+    src: "musique58.mp3",
+        title: "Vlog Beat Background"
+    },
+	{
+    src: "musique59.mp3",
+        title: "Deep Abstract Ambient_Snowcap"
+    },
+	{
+    src: "musique60.mp3",
+        title: "Chinese Lunar New Year"
+    },
 ];
 
 let currentMusic = 0;
