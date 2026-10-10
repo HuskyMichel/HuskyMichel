@@ -2292,6 +2292,85 @@ const durationDisplay = document.getElementById("duration");
 	{
     src: "musique20.mp3",
         title: "No Copyright Music"
+    },
+	{
+    src: "musique21.mp3",
+        title: "Organic Flow [10/15] (Remastered)"
+    },
+	{
+    src: "musique22.mp3",
+        title: "Blues Ballad"
+    },
+	{
+    src: "musique23.mp3",
+        title: "Energetic Action Sport"
+    },
+	{
+    src: "musique24.mp3",
+        title: "Motivation Sport Rock Trailer"
+    },
+	{
+    src: "musique25.mp3",
+        title: "Total War (Epic Action Cinematic Trailer Main)"
+    },
+	{
+    src: "musique26.mp3",
+        title: "Night Summer Lounge"
+    },
+	{
+    src: "musique27.mp3",
+        title: "Charming Phonk I Free Background Music I Free Music Lab Release"
+    },
+	{
+    src: "musique28.mp3",
+        title: "Berry (Groovy Bass Trap)"
+    },
+	{
+    src: "musique29.mp3",
+        title: "No Sleep | Hiphop Music"
+    },
+	{
+    src: "musique30.mp3",
+        title: "Epic"
+    },
+	{
+    src: "musique31.mp3",
+        title: "Upbeat Happy Corporate"
+    },
+	{
+    src: "musique32.mp3",
+        title: "Strong Character (powerful fuzz action sport rock"
+    },{
+    src: "musique33.mp3",
+        title: "Action man (The Action Sport)"
+    },
+	{
+    src: "musique34.mp3",
+        title: "Action race rock music"
+    },
+	{
+    src: "musique35.mp3",
+        title: "Action trailer promo rock"
+    },
+	{
+    src: "musique36.mp3",
+        title: "Music Promotion"
+    },
+	{
+    src: "musique37.mp3",
+        title: "Vlog Hip-Hop"
+    },
+	{
+    src: "musique38.mp3",
+        title: "Lo-fi Music Loop - Sentimental Jazzy Love"
+    },
+	{
+    src: "musique39.mp3",
+        title: "Comedy Cartoon Funny Background Musice"
+    },
+	{
+    src: "musique40.mp3",
+        title: "Inspiring Cinematic Music"
     }
 ];
 
