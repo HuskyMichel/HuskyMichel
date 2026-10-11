@@ -3,10 +3,10 @@
 
 // ========================================
 // BLOCK BLAST — HUSKYMICHEL
+// Version améliorée : glisser-déposer et aperçu
 // ========================================
 
 const SIZE = 8;
-
 const BEST_KEY = "hm_blockblast_best_v1";
 const THEME_KEY = "hm_blockblast_theme_v1";
 
@@ -33,9 +33,7 @@ if (
   !newGameButton ||
   !restartButton
 ) {
-  throw new Error(
-    "Un élément du jeu manque dans block-blast.html."
-  );
+  throw new Error("Un élément du jeu manque dans block-blast.html.");
 }
 
 // ========================================
@@ -43,37 +41,55 @@ if (
 // ========================================
 
 const SHAPES = [
+  // Bloc simple
   [[0, 0]],
 
+  // Blocs de 2
   [[0, 0], [0, 1]],
   [[0, 0], [1, 0]],
+
+  // Blocs de 3
   [[0, 0], [0, 1], [0, 2]],
   [[0, 0], [1, 0], [2, 0]],
+  [[0, 0], [0, 1], [1, 0]],
+  [[0, 0], [0, 1], [1, 1]],
+  [[0, 0], [1, 0], [1, 1]],
+  [[0, 1], [1, 0], [1, 1]],
 
-  [[0, 0], [0, 1], [1, 0], [1, 1]],
+  // Carré de 2 × 2
+  [
+    [0, 0], [0, 1],
+    [1, 0], [1, 1]
+  ],
 
+  // Carré de 3 × 3
+  [
+    [0, 0], [0, 1], [0, 2],
+    [1, 0], [1, 1], [1, 2],
+    [2, 0], [2, 1], [2, 2]
+  ],
+
+  // Blocs en T
   [[0, 0], [0, 1], [0, 2], [1, 1]],
   [[0, 0], [1, 0], [2, 0], [1, 1]],
+  [[0, 1], [1, 0], [1, 1], [1, 2]],
+  [[0, 1], [1, 1], [2, 1], [1, 0]],
 
-  [[0, 0], [0, 1], [0, 2], [0, 3]],
-  [[0, 0], [1, 0], [2, 0], [3, 0]],
-
+  // Blocs en L
   [[0, 0], [1, 0], [2, 0], [2, 1]],
+  [[0, 0], [0, 1], [0, 2], [1, 0]],
   [[0, 0], [0, 1], [1, 1], [2, 1]],
+  [[0, 2], [1, 0], [1, 1], [1, 2]],
 
+  // Blocs en zigzag
   [[0, 0], [1, 0], [1, 1], [2, 1]],
   [[0, 1], [1, 0], [1, 1], [2, 0]],
 
-  [
-    [0, 0], [0, 1], [0, 2],
-    [1, 0], [1, 1], [1, 2]
-  ],
-
-  [
-    [0, 0], [0, 1],
-    [1, 0], [1, 1],
-    [2, 0], [2, 1]
-  ]
+  // Grandes barres
+  [[0, 0], [0, 1], [0, 2], [0, 3]],
+  [[0, 0], [1, 0], [2, 0], [3, 0]],
+  [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4]],
+  [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]]
 ];
 
 const COLORS = [
@@ -97,6 +113,7 @@ let score = 0;
 let bestScore = readBestScore();
 let busy = false;
 let gameOver = false;
+let dragging = false;
 
 // ========================================
 // SAUVEGARDE
@@ -114,15 +131,7 @@ function saveBestScore() {
   try {
     localStorage.setItem(BEST_KEY, String(bestScore));
   } catch {
-    // Le jeu reste jouable si le stockage est indisponible.
-  }
-}
-
-function saveTheme(theme) {
-  try {
-    localStorage.setItem(THEME_KEY, theme);
-  } catch {
-    // La personnalisation reste utilisable pendant la partie.
+    // Le jeu reste jouable sans sauvegarde.
   }
 }
 
@@ -135,11 +144,21 @@ function loadTheme() {
       themeSelect.value = saved;
     }
   } catch {
-    // Thème bleu par défaut.
+    // Thème par défaut.
   }
 
   document.body.dataset.theme = themeSelect.value;
 }
+
+themeSelect.addEventListener("change", () => {
+  document.body.dataset.theme = themeSelect.value;
+
+  try {
+    localStorage.setItem(THEME_KEY, themeSelect.value);
+  } catch {
+    // Le thème reste actif pendant la partie.
+  }
+});
 
 // ========================================
 // NOUVELLE PARTIE
@@ -156,6 +175,7 @@ function startGame() {
   score = 0;
   busy = false;
   gameOver = false;
+  dragging = false;
 
   modalElement.classList.add("hidden");
 
@@ -169,23 +189,13 @@ function startGame() {
 
 function createNewPieces() {
   pieces = Array.from({ length: 3 }, () => {
-    // Une petite chance d'obtenir une bombe.
-    if (Math.random() < 0.09) {
-      return {
-        cells: [[0, 0]],
-        color: "#ff5364",
-        bomb: true,
-        used: false
-      };
-    }
-
-    const shape =
-      SHAPES[Math.floor(Math.random() * SHAPES.length)];
+    const shape = SHAPES[
+      Math.floor(Math.random() * SHAPES.length)
+    ];
 
     return {
       cells: shape.map(([r, c]) => [r, c]),
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      bomb: false,
       used: false
     };
   });
@@ -212,6 +222,7 @@ function renderBoard() {
       cell.className = "cell board-cell";
       cell.dataset.row = String(r);
       cell.dataset.col = String(c);
+
       cell.setAttribute(
         "aria-label",
         `Ligne ${r + 1}, colonne ${c + 1}`
@@ -222,34 +233,34 @@ function renderBoard() {
       cell.style.padding = "0";
       cell.style.border = "0";
       cell.style.cursor = gameOver ? "default" : "pointer";
+      cell.style.transition =
+        "background-color 100ms ease, transform 100ms ease";
 
       const value = board[r][c];
 
       if (value) {
         cell.classList.add("filled");
-        cell.style.background = value.color;
+        cell.style.backgroundColor = value.color;
         cell.style.boxShadow =
           "inset 0 -3px 0 rgba(0,0,0,0.16)";
-
-        if (value.bomb) {
-          cell.classList.add("bomb");
-          cell.textContent = "💣";
-          cell.style.display = "grid";
-          cell.style.placeItems = "center";
-          cell.style.fontSize = "clamp(12px, 3vw, 22px)";
-        }
       }
 
       cell.addEventListener("click", () => {
-        placeSelected(r, c);
+        if (!dragging) {
+          placeSelected(r, c);
+        }
       });
 
-      cell.addEventListener("mouseenter", () => {
-        showPreview(r, c);
+      cell.addEventListener("pointerenter", () => {
+        if (selectedPiece !== -1) {
+          showPreview(r, c);
+        }
       });
 
       cell.addEventListener("focus", () => {
-        showPreview(r, c);
+        if (selectedPiece !== -1) {
+          showPreview(r, c);
+        }
       });
 
       boardElement.appendChild(cell);
@@ -258,14 +269,15 @@ function renderBoard() {
 }
 
 // ========================================
-// AFFICHAGE DES BLOCS DISPONIBLES
+// AFFICHAGE DES BLOCS
 // ========================================
 
 function renderPieces() {
   piecesElement.replaceChildren();
 
   piecesElement.style.display = "grid";
-  piecesElement.style.gridTemplateColumns = "repeat(3, minmax(0, 1fr))";
+  piecesElement.style.gridTemplateColumns =
+    "repeat(3, minmax(0, 1fr))";
   piecesElement.style.gap = "10px";
 
   pieces.forEach((piece, index) => {
@@ -275,27 +287,31 @@ function renderPieces() {
     button.className = "piece-option";
     button.setAttribute(
       "aria-label",
-      piece.bomb
-        ? `Bloc ${index + 1} : bombe`
-        : `Sélectionner le bloc ${index + 1}`
+      `Sélectionner le bloc ${index + 1}`
     );
 
     button.style.minWidth = "0";
-    button.style.minHeight = "90px";
+    button.style.minHeight = "100px";
     button.style.display = "grid";
     button.style.placeItems = "center";
     button.style.padding = "8px";
     button.style.borderRadius = "12px";
+
     button.style.border =
       selectedPiece === index
         ? "2px solid #ffffff"
         : "2px solid rgba(255,255,255,0.10)";
+
     button.style.background =
       selectedPiece === index
         ? "rgba(70,166,255,0.22)"
         : "rgba(255,255,255,0.04)";
-    button.style.cursor = "pointer";
-    button.style.opacity = piece.used ? "0.22" : "1";
+
+    button.style.cursor = piece.used ? "default" : "grab";
+    button.style.touchAction = "none";
+    button.style.opacity = piece.used ? "0.2" : "1";
+    button.style.transition =
+      "border 120ms ease, background 120ms ease, transform 120ms ease";
 
     if (piece.used) {
       button.disabled = true;
@@ -315,35 +331,26 @@ function renderPieces() {
     shape.style.gap = "3px";
     shape.style.justifyContent = "center";
     shape.style.alignContent = "center";
+    shape.style.pointerEvents = "none";
 
     for (let r = 0; r < maxRow; r++) {
       for (let c = 0; c < maxCol; c++) {
         const block = document.createElement("span");
+
         const containsBlock = piece.cells.some(
           ([pr, pc]) => pr === r && pc === c
         );
-
-        block.className = "piece-cell";
 
         block.style.width = "19px";
         block.style.height = "19px";
         block.style.borderRadius = "4px";
 
         if (containsBlock) {
-          block.style.background = piece.bomb
-            ? "#ff5364"
-            : piece.color;
+          block.style.backgroundColor = piece.color;
           block.style.boxShadow =
             "inset 0 -2px 0 rgba(0,0,0,0.16)";
-
-          if (piece.bomb) {
-            block.textContent = "💣";
-            block.style.display = "grid";
-            block.style.placeItems = "center";
-            block.style.fontSize = "14px";
-          }
         } else {
-          block.style.background = "transparent";
+          block.style.backgroundColor = "transparent";
         }
 
         shape.appendChild(block);
@@ -352,22 +359,34 @@ function renderPieces() {
 
     button.appendChild(shape);
 
-    if (piece.bomb) {
-      const label = document.createElement("span");
-      label.textContent = "BOMBE";
-      label.style.fontSize = "10px";
-      label.style.fontWeight = "bold";
-      label.style.marginTop = "4px";
-      button.appendChild(label);
-    }
-
+    // Cliquer pour sélectionner le bloc.
     button.addEventListener("click", () => {
-      if (busy || gameOver || piece.used) return;
+      if (busy || gameOver || piece.used || dragging) return;
 
       selectedPiece = index;
-      statusElement.textContent = piece.bomb
-        ? "Choisis où placer la bombe !"
-        : "Choisis une case du plateau !";
+      statusElement.textContent =
+        "Place ton bloc sur le plateau !";
+
+      renderPieces();
+      renderBoard();
+    });
+
+    // Prendre le bloc pour le déplacer.
+    button.addEventListener("pointerdown", (event) => {
+      if (busy || gameOver || piece.used) return;
+
+      if (event.pointerType === "mouse" && event.button !== 0) {
+        return;
+      }
+
+      selectedPiece = index;
+      dragging = true;
+
+      button.style.cursor = "grabbing";
+      button.style.transform = "scale(1.04)";
+
+      statusElement.textContent =
+        "Déplace le bloc sur le plateau !";
 
       renderPieces();
       renderBoard();
@@ -378,7 +397,47 @@ function renderPieces() {
 }
 
 // ========================================
-// PRÉVISUALISATION DU PLACEMENT
+// GLISSER-DÉPOSER
+// ========================================
+
+document.addEventListener("pointerup", (event) => {
+  if (!dragging) return;
+
+  dragging = false;
+
+  const target = event.target instanceof Element
+    ? event.target.closest(".board-cell")
+    : null;
+
+  if (target) {
+    const row = Number(target.dataset.row);
+    const col = Number(target.dataset.col);
+
+    placeSelected(row, col);
+  } else {
+    clearPreview();
+
+    if (!gameOver) {
+      statusElement.textContent =
+        "Bloc sélectionné : dépose-le sur le plateau !";
+
+      renderPieces();
+      renderBoard();
+    }
+  }
+});
+
+document.addEventListener("pointercancel", () => {
+  if (!dragging) return;
+
+  dragging = false;
+  clearPreview();
+  renderPieces();
+  renderBoard();
+});
+
+// ========================================
+// PRÉVISUALISATION DES LIGNES ET COLONNES
 // ========================================
 
 function showPreview(row, col) {
@@ -397,40 +456,123 @@ function showPreview(row, col) {
   const piece = pieces[selectedPiece];
   const valid = canPlace(piece, row, col);
 
-  piece.cells.forEach(([dr, dc]) => {
-    const r = row + dr;
-    const c = col + dc;
+  if (!valid) {
+    piece.cells.forEach(([dr, dc]) => {
+      const r = row + dr;
+      const c = col + dc;
 
-    if (r < 0 || r >= SIZE || c < 0 || c >= SIZE) {
-      return;
+      if (r < 0 || r >= SIZE || c < 0 || c >= SIZE) {
+        return;
+      }
+
+      const cell = getCell(r, c);
+
+      if (cell) {
+        cell.style.backgroundColor = "#ff5364";
+        cell.style.opacity = "0.65";
+      }
+    });
+
+    statusElement.textContent =
+      "Impossible ici : choisis une autre position.";
+
+    return;
+  }
+
+  // Simuler le placement sans modifier le vrai plateau.
+  const simulated = board.map((line) => line.slice());
+
+  piece.cells.forEach(([dr, dc]) => {
+    simulated[row + dr][col + dc] = {
+      color: piece.color
+    };
+  });
+
+  const completedRows = [];
+  const completedCols = [];
+
+  for (let r = 0; r < SIZE; r++) {
+    if (simulated[r].every((cell) => cell !== null)) {
+      completedRows.push(r);
+    }
+  }
+
+  for (let c = 0; c < SIZE; c++) {
+    let full = true;
+
+    for (let r = 0; r < SIZE; r++) {
+      if (!simulated[r][c]) {
+        full = false;
+        break;
+      }
     }
 
+    if (full) completedCols.push(c);
+  }
+
+  // Prévisualiser le bloc à poser.
+  piece.cells.forEach(([dr, dc]) => {
+    const cell = getCell(row + dr, col + dc);
+
+    if (cell) {
+      cell.style.backgroundColor = piece.color;
+      cell.style.transform = "scale(0.94)";
+      cell.style.opacity = "1";
+    }
+  });
+
+  // Prévisualiser les lignes complètes dans la couleur du bloc.
+  const highlighted = new Set();
+
+  completedRows.forEach((r) => {
+    for (let c = 0; c < SIZE; c++) {
+      highlighted.add(`${r},${c}`);
+    }
+  });
+
+  completedCols.forEach((c) => {
+    for (let r = 0; r < SIZE; r++) {
+      highlighted.add(`${r},${c}`);
+    }
+  });
+
+  highlighted.forEach((key) => {
+    const [r, c] = key.split(",").map(Number);
     const cell = getCell(r, c);
 
-    if (!cell || board[r][c]) return;
+    if (!cell) return;
 
-    cell.classList.add(
-      valid ? "preview-valid" : "preview-invalid"
-    );
-
-    cell.style.background = valid
-      ? (piece.bomb ? "#ff5364" : piece.color)
-      : "rgba(255, 83, 100, 0.45)";
+    cell.style.backgroundColor = piece.color;
+    cell.style.opacity = "1";
+    cell.style.transform = "scale(0.94)";
+    cell.style.boxShadow =
+      "inset 0 0 0 2px rgba(255,255,255,0.75), 0 0 8px " +
+      piece.color;
   });
+
+  if (highlighted.size > 0) {
+    const count = completedRows.length + completedCols.length;
+
+    statusElement.textContent =
+      `✨ ${count} ligne${count > 1 ? "s" : ""} prête${count > 1 ? "s" : ""} à être effacée${count > 1 ? "s" : ""} !`;
+  } else {
+    statusElement.textContent = "Tu peux poser ton bloc ici !";
+  }
 }
 
 function clearPreview() {
-  boardElement.querySelectorAll(".preview-valid, .preview-invalid")
-    .forEach((cell) => {
-      cell.classList.remove("preview-valid", "preview-invalid");
+  boardElement.querySelectorAll(".board-cell").forEach((cell) => {
+    const r = Number(cell.dataset.row);
+    const c = Number(cell.dataset.col);
+    const value = board[r][c];
 
-      const r = Number(cell.dataset.row);
-      const c = Number(cell.dataset.col);
-
-      if (!board[r][c]) {
-        cell.style.background = "";
-      }
-    });
+    cell.style.backgroundColor = value ? value.color : "";
+    cell.style.opacity = "1";
+    cell.style.transform = "";
+    cell.style.boxShadow = value
+      ? "inset 0 -3px 0 rgba(0,0,0,0.16)"
+      : "";
+  });
 }
 
 function getCell(row, col) {
@@ -440,7 +582,7 @@ function getCell(row, col) {
 }
 
 // ========================================
-// VÉRIFICATION DU PLACEMENT
+// VALIDATION DU PLACEMENT
 // ========================================
 
 function canPlace(piece, row, col) {
@@ -459,7 +601,7 @@ function canPlace(piece, row, col) {
 }
 
 // ========================================
-// PLACER UN BLOC
+// POSER UN BLOC
 // ========================================
 
 async function placeSelected(row, col) {
@@ -476,55 +618,27 @@ async function placeSelected(row, col) {
   const piece = pieces[selectedPiece];
 
   if (!canPlace(piece, row, col)) {
-    statusElement.textContent = "Impossible ici : choisis une autre case.";
+    statusElement.textContent =
+      "Impossible ici : choisis une autre position.";
     return;
   }
 
   busy = true;
   clearPreview();
 
+  // Placer les blocs.
   piece.cells.forEach(([dr, dc]) => {
-    const r = row + dr;
-    const c = col + dc;
-
-    board[r][c] = {
-      color: piece.color,
-      bomb: piece.bomb
+    board[row + dr][col + dc] = {
+      color: piece.color
     };
   });
 
   piece.used = true;
   selectedPiece = -1;
 
-  // Points gagnés pour les blocs posés.
   addScore(piece.cells.length);
 
-  // La bombe détruit les blocs dans une zone de 3 x 3.
-  if (piece.bomb) {
-    const removed = [];
-
-    for (let r = Math.max(0, row - 1); r <= Math.min(SIZE - 1, row + 1); r++) {
-      for (let c = Math.max(0, col - 1); c <= Math.min(SIZE - 1, col + 1); c++) {
-        if (board[r][c]) {
-          removed.push([r, c]);
-        }
-      }
-    }
-
-    removed.forEach(([r, c]) => {
-      board[r][c] = null;
-    });
-
-    addScore(removed.length * 2);
-    statusElement.textContent = "💥 BOUM ! La bombe a nettoyé la zone !";
-  } else {
-    statusElement.textContent = "Bien joué !";
-  }
-
-  renderBoard();
-  renderPieces();
-
-  // Repérer les lignes et colonnes complètes.
+  // Détecter les lignes et colonnes complètes.
   const completedRows = [];
   const completedCols = [];
 
@@ -547,8 +661,7 @@ async function placeSelected(row, col) {
     if (full) completedCols.push(c);
   }
 
-  // Éviter de compter deux fois une case située
-  // à l'intersection d'une ligne et d'une colonne.
+  // Rassembler les cases à effacer sans doublons.
   const clearedCells = new Set();
 
   completedRows.forEach((r) => {
@@ -563,42 +676,53 @@ async function placeSelected(row, col) {
     }
   });
 
+  renderBoard();
+  renderPieces();
+
   if (clearedCells.size > 0) {
+    // Toutes les cases de la ligne/colonne prennent
+    // temporairement la couleur du bloc posé.
     clearedCells.forEach((key) => {
       const [r, c] = key.split(",").map(Number);
       const cell = getCell(r, c);
 
-      if (cell) cell.classList.add("clearing");
+      if (cell) {
+        cell.style.backgroundColor = piece.color;
+        cell.style.boxShadow =
+          `0 0 10px ${piece.color}, inset 0 0 0 2px rgba(255,255,255,0.7)`;
+        cell.style.transform = "scale(0.94)";
+      }
     });
+
+    const lineCount = completedRows.length + completedCols.length;
+
+    statusElement.textContent =
+      `✨ ${lineCount} ligne${lineCount > 1 ? "s" : ""} complétée${lineCount > 1 ? "s" : ""} !`;
 
     await new Promise((resolve) => setTimeout(resolve, 300));
 
+    // Effacer les cases complétées.
     clearedCells.forEach((key) => {
       const [r, c] = key.split(",").map(Number);
       board[r][c] = null;
     });
 
     addScore(clearedCells.size * 2);
-
-    const lineCount = completedRows.length + completedCols.length;
-    statusElement.textContent =
-      `✨ ${lineCount} ligne${lineCount > 1 ? "s" : ""} nettoyée${lineCount > 1 ? "s" : ""} !`;
-
     renderBoard();
+  } else {
+    statusElement.textContent = "Bien joué !";
   }
 
-  // Quand les trois blocs sont utilisés, en donner trois autres.
+  // Générer trois nouveaux blocs quand les trois sont utilisés.
   if (pieces.every((p) => p.used)) {
     createNewPieces();
+    renderPieces();
     statusElement.textContent += " Nouveaux blocs disponibles !";
   }
 
-  renderPieces();
   renderBoard();
-
   busy = false;
 
-  // Vérifier si au moins un bloc peut encore être placé.
   if (!hasPossibleMove()) {
     endGame();
   }
@@ -647,6 +771,7 @@ function hasPossibleMove() {
 function endGame() {
   gameOver = true;
   selectedPiece = -1;
+  dragging = false;
 
   statusElement.textContent = "Partie terminée !";
 
@@ -654,18 +779,14 @@ function endGame() {
     `Ton score : ${score} points. Meilleur score : ${bestScore} points.`;
 
   modalElement.classList.remove("hidden");
+
   renderPieces();
   renderBoard();
 }
 
 // ========================================
-// THÈMES ET BOUTONS
+// BOUTONS
 // ========================================
-
-themeSelect.addEventListener("change", () => {
-  document.body.dataset.theme = themeSelect.value;
-  saveTheme(themeSelect.value);
-});
 
 newGameButton.addEventListener("click", startGame);
 restartButton.addEventListener("click", startGame);
