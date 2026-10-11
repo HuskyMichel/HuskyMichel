@@ -1,0 +1,126 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#17213b">
+
+  <title>Block Blast | HuskyMichel</title>
+  <meta name="description" content="Joue à Block Blast sur HuskyMichel et bats ton meilleur score !">
+
+  <link rel="stylesheet" href="block-blast.css">
+  <script src="block-blast.js" defer></script>
+</head>
+
+<body>
+  <main class="game-container">
+
+    <!-- EN-TÊTE -->
+    <header class="top-header">
+      <a class="back-link" href="index.html">← Retour à HuskyMichel</a>
+
+      <h1 class="game-logo">
+        BLOCK <span>BLAST</span>
+      </h1>
+
+      <p class="subtitle">Le défi des blocs !</p>
+    </header>
+
+    <!-- SCORES -->
+    <section class="score-panel" aria-label="Scores">
+      <div class="score-box">
+        <span class="score-label">SCORE</span>
+        <strong id="score">0</strong>
+      </div>
+
+      <div class="score-box record-box">
+        <span class="score-label">MEILLEUR SCORE</span>
+        <strong id="best-score">0</strong>
+      </div>
+    </section>
+
+    <!-- PLATEAU -->
+    <section class="board-section">
+      <div class="section-heading">
+        <h2>Ton plateau</h2>
+        <span id="status" role="status" aria-live="polite">
+          À toi de jouer !
+        </span>
+      </div>
+
+      <div
+        id="board"
+        class="board"
+        role="group"
+        aria-label="Grille de jeu de 8 par 8 cases">
+      </div>
+    </section>
+
+    <!-- BLOCS DISPONIBLES -->
+    <section class="pieces-section">
+      <h2>Tes blocs</h2>
+
+      <p class="help-text">
+        Sélectionne un bloc, puis sélectionne une case du plateau
+        pour le placer. Complète des lignes ou des colonnes pour
+        gagner des points !
+      </p>
+
+      <div id="pieces" class="pieces-tray"></div>
+    </section>
+
+    <!-- PERSONNALISATION -->
+    <section class="settings-panel">
+      <h2>Personnalisation</h2>
+
+      <label for="theme">Thème du plateau</label>
+
+      <select id="theme">
+        <option value="blue">Bleu classique</option>
+        <option value="purple">Violet</option>
+        <option value="green">Vert</option>
+        <option value="orange">Orange</option>
+      </select>
+    </section>
+
+    <!-- COMMANDES -->
+    <section class="game-actions">
+      <button id="new-game" class="primary-button" type="button">
+        Nouvelle partie
+      </button>
+    </section>
+
+    <!-- INFORMATIONS -->
+    <footer class="footer-note">
+      <p>Block Blast — une création personnalisée de HuskyMichel.</p>
+    </footer>
+
+  </main>
+
+  <!-- FENÊTRE DE FIN DE PARTIE -->
+  <div
+    id="game-modal"
+    class="modal hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title">
+
+    <div class="modal-card">
+      <div class="modal-emoji" aria-hidden="true">🎮</div>
+
+      <h2 id="modal-title">Partie terminée !</h2>
+
+      <p id="modal-message">Ton score : 0 points</p>
+
+      <button
+        id="restart-button"
+        class="primary-button"
+        type="button">
+        Rejouer
+      </button>
+    </div>
+  </div>
+
+</body>
+</html>
