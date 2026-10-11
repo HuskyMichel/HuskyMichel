@@ -346,6 +346,7 @@ document.head.appendChild(style);
 
 let audioContext = null;
 let musicMaster = null;
+let effectsMaster = null;
 let musicTimer = null;
 let nextMusicNoteTime = 0;
 let musicStep = 0;
@@ -408,7 +409,12 @@ function createAudioContext() {
   compressor.release.value = 0.18;
 
   musicMaster.connect(compressor);
-  compressor.connect(audioContext.destination);
+
+effectsMaster = audioContext.createGain();
+effectsMaster.gain.value = 0.75;
+effectsMaster.connect(compressor);
+
+compressor.connect(audioContext.destination);
 
   return true;
 }
@@ -593,6 +599,90 @@ async function toggleMusic() {
   }
 
   updateMusicButton();
+}
+
+// ========================================
+// EFFETS SONORES ET ANNONCES EN ANGLAIS
+// ========================================
+
+let lastAnnouncementTime = 0;
+
+function playEffectTone(frequency, duration, type = "sine", volume = 0.2) {
+  if (!createAudioContext()) return;
+
+  audioContext.resume().then(() => {
+    if (!effectsMaster) return;
+
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    const now = audioContext.currentTime;
+
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, now);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    oscillator.connect(gain);
+    gain.connect(effectsMaster);
+
+    oscillator.start(now);
+    oscillator.stop(now + duration + 0.02);
+
+    oscillator.addEventListener("ended", () => {
+      oscillator.disconnect();
+      gain.disconnect();
+    }, { once: true });
+  }).catch(() => {});
+}
+
+function playPlaceSound() {
+  playEffectTone(420, 0.07, "triangle", 0.18);
+}
+
+function playClearSound(lineCount = 1) {
+  playEffectTone(520, 0.12, "sine", 0.22);
+
+  if (lineCount >= 2) {
+    window.setTimeout(() => {
+      playEffectTone(780, 0.16, "triangle", 0.25);
+    }, 90);
+  }
+
+  if (lineCount >= 4) {
+    window.setTimeout(() => {
+      playEffectTone(1040, 0.22, "sine", 0.3);
+    }, 180);
+  }
+}
+
+function playPerfectClearSound() {
+  [523.25, 659.25, 783.99, 1046.5].forEach((frequency, index) => {
+    window.setTimeout(() => {
+      playEffectTone(frequency, 0.3, "triangle", 0.3);
+    }, index * 110);
+  });
+}
+
+function announceGameEvent(message) {
+  if (!("speechSynthesis" in window)) return;
+
+  const now = Date.now();
+
+  // Évite que plusieurs annonces se superposent trop souvent.
+  if (now - lastAnnouncementTime < 900) return;
+  lastAnnouncementTime = now;
+
+  window.speechSynthesis.cancel();
+
+  const announcement = new SpeechSynthesisUtterance(message);
+  announcement.lang = "en-US";
+  announcement.rate = 1.08;
+  announcement.pitch = 1.12;
+  announcement.volume = 0.85;
+
+  window.speechSynthesis.speak(announcement);
 }
 
 // Bouton musique
@@ -843,12 +933,44 @@ function startGame() {
 }
 
 function createNewPieces() {
-  pieces = Array.from({ length: 3 }, () => ({
+  const emptyCells = board.flat().filter(cell => cell === null).length;
+  const density = 1 - emptyCells / (SIZE * SIZE);
+
+  // Plus le plateau se remplit, plus l'aide devient probable.
+  // Elle reste aléatoire et n'est jamais garantie à chaque tirage.
+  const helpChance = Math.max(
+    0,
+    Math.min(0.70, ((density - 0.28) / 0.55) * 0.70)
+  );
+
+  const randomPiece = () => ({
     cells: SHAPES[Math.floor(Math.random() * SHAPES.length)]
-      .map(([r,c]) => [r,c]),
+      .map(([r, c]) => [r, c]),
     color: COLORS[Math.floor(Math.random() * COLORS.length)],
     used: false
-  }));
+  });
+
+  // La plupart du temps, les pièces restent totalement aléatoires.
+  if (Math.random() >= helpChance) {
+    pieces = Array.from({ length: 3 }, randomPiece);
+  } else {
+    // On compare plusieurs tirages et on privilégie un ensemble
+    // qui offre davantage de placements possibles.
+    let bestSet = null;
+    let bestValue = -Infinity;
+
+    for (let attempt = 0; attempt < 24; attempt++) {
+      const candidate = Array.from({ length: 3 }, randomPiece);
+      const value = evaluatePieceSet(candidate);
+
+      if (value > bestValue) {
+        bestValue = value;
+        bestSet = candidate;
+      }
+    }
+
+    pieces = bestSet || Array.from({ length: 3 }, randomPiece);
+  }
 
   selectedPiece = -1;
 }
@@ -1171,6 +1293,55 @@ function canPlace(piece, row, col) {
 }
 
 // ========================================
+// ÉVALUATION DES PIÈCES
+// ========================================
+
+function evaluatePieceSet(candidatePieces) {
+  let totalValue = 0;
+
+  for (const piece of candidatePieces) {
+    let placementCount = 0;
+    let bestClear = 0;
+
+    for (let r = 0; r < SIZE; r++) {
+      for (let c = 0; c < SIZE; c++) {
+        if (!canPlace(piece, r, c)) continue;
+
+        placementCount++;
+
+        const simulated = board.map(row => row.slice());
+
+        piece.cells.forEach(([dr, dc]) => {
+          simulated[r + dr][c + dc] = { color: piece.color };
+        });
+
+        let completedLines = 0;
+
+        for (let row = 0; row < SIZE; row++) {
+          if (simulated[row].every(cell => cell !== null)) {
+            completedLines++;
+          }
+        }
+
+        for (let col = 0; col < SIZE; col++) {
+          if (simulated.every(row => row[col] !== null)) {
+            completedLines++;
+          }
+        }
+
+        bestClear = Math.max(bestClear, completedLines);
+      }
+    }
+
+    // Une pièce jouable est préférable à une pièce bloquée.
+    totalValue += Math.min(placementCount, 12);
+    totalValue += bestClear * 20;
+  }
+
+  return totalValue;
+}
+
+// ========================================
 // PARTICULES ET COMBOS
 // ========================================
 
@@ -1197,10 +1368,12 @@ function burstParticles(cells, color) {
 }
 
 function showCombo(count, bonus) {
-  if (count >= 2) {
-    comboBanner.textContent = `🔥 COMBO ×${count}  +${bonus}`;
+  if (count >= 4) {
+    comboBanner.textContent = `INCREDIBLE! +${bonus}`;
+  } else if (count >= 2) {
+    comboBanner.textContent = `AMAZING! COMBO ×${count} +${bonus}`;
   } else {
-    comboBanner.textContent = "✨ LIGNE EFFACÉE !";
+    comboBanner.textContent = "NICE! LINE CLEARED";
   }
 
   comboBanner.classList.remove("show");
@@ -1208,6 +1381,7 @@ function showCombo(count, bonus) {
   comboBanner.classList.add("show");
 
   clearTimeout(comboBannerTimer);
+
   comboBannerTimer = setTimeout(() => {
     comboBanner.classList.remove("show");
   }, 1000);
@@ -1239,7 +1413,8 @@ async function placeSelected(row, col) {
 
   piece.used = true;
   selectedPiece = -1;
-  addScore(piece.cells.length);
+  addScore(piece.cells.length * 5);
+playPlaceSound();
 
   const completedRows = [];
   const completedCols = [];
@@ -1269,7 +1444,22 @@ async function placeSelected(row, col) {
     comboCount++;
 
     const lineCount = completedRows.length + completedCols.length;
-    const comboBonus = comboCount > 1 ? (comboCount - 1) * 5 : 0;
+
+// Récompense pour chaque ligne ou colonne effacée.
+const lineBonus = lineCount * 100;
+
+// Bonus croissant pour les effacements multiples.
+const multiLineBonus = lineCount >= 2
+  ? (lineCount - 1) * 75
+  : 0;
+
+// Bonus de série lorsque le joueur efface des lignes
+// lors de plusieurs placements consécutifs.
+const comboBonus = comboCount > 1
+  ? (comboCount - 1) * 25
+  : 0;
+
+const totalClearBonus = lineBonus + multiLineBonus + comboBonus;
 
     clearedCells.forEach((key) => {
       const [r,c] = key.split(",").map(Number);
@@ -1287,7 +1477,16 @@ async function placeSelected(row, col) {
       (comboBonus ? ` Bonus combo : +${comboBonus}` : "");
 
     burstParticles(clearedCells, piece.color);
-    showCombo(lineCount, comboBonus);
+    showCombo(lineCount, totalClearBonus);
+playClearSound(lineCount);
+
+if (lineCount >= 4) {
+  announceGameEvent("Incredible!");
+} else if (lineCount >= 2) {
+  announceGameEvent("Amazing!");
+} else {
+  announceGameEvent("Nice!");
+}
 
     await new Promise((resolve) => setTimeout(resolve, 120));
 
@@ -1304,8 +1503,22 @@ async function placeSelected(row, col) {
       board[r][c] = null;
     });
 
-    addScore(clearedCells.size * 2 + comboBonus);
-    renderBoard();
+    addScore(clearedCells.size * 2 + totalClearBonus);
+
+renderBoard();
+
+// Bonus exceptionnel si le plateau est entièrement vide.
+const boardIsEmpty = board.every(row =>
+  row.every(cell => cell === null)
+);
+
+if (boardIsEmpty) {
+  addScore(1000);
+  statusElement.textContent =
+    "PERFECT CLEAR! +1000 points !";
+  playPerfectClearSound();
+  announceGameEvent("Perfect Clear!");
+}
   } else {
     comboCount = 0;
     statusElement.textContent = "Bien joué ! Continue comme ça !";
