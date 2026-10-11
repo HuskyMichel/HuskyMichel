@@ -125,25 +125,28 @@ async function main() {
 
   console.log(`${profiles.length} profil(s) chargé(s), ${knownChannels.size} chaîne(s) YouTube identifiée(s).`);
 
-  let liveByChannel = new Map();
+  const liveByChannel = new Map();
 
-  if (knownChannels.size > 0) {
-    // Une recherche globale limite fortement l'utilisation du quota YouTube gratuit.
-    // L'API ne renvoie que les directs présents dans ses résultats (maximum 50 ici).
-    const liveSearch = await youtubeApi("search", {
-      part: "snippet",
-      type: "video",
-      eventType: "live",
-      maxResults: 50,
-      order: "date"
-    });
+  // Chercher chaque chaîne séparément évite de manquer un live parce qu'il
+  // n'apparaît pas dans les 50 résultats d'une recherche globale.
+  for (const channelId of knownChannels) {
+    try {
+      const liveSearch = await youtubeApi("search", {
+        part: "snippet",
+        channelId,
+        type: "video",
+        eventType: "live",
+        maxResults: 5,
+        order: "date"
+      });
 
-    for (const item of liveSearch.items || []) {
-      const channelId = item.snippet?.channelId;
-      const videoId = item.id?.videoId;
+      const item = (liveSearch.items || []).find((video) => video.id?.videoId);
+      if (!item) {
+        console.log(`Aucun direct trouvé pour la chaîne ${channelId}.`);
+        continue;
+      }
 
-      if (!channelId || !videoId || !knownChannels.has(channelId)) continue;
-
+      const videoId = item.id.videoId;
       liveByChannel.set(channelId, {
         videoId,
         liveUrl: `https://www.youtube.com/watch?v=${videoId}`,
@@ -154,6 +157,9 @@ async function main() {
           "",
         title: item.snippet?.title || ""
       });
+      console.log(`Direct trouvé pour la chaîne ${channelId} : ${videoId}`);
+    } catch (error) {
+      console.warn(`Échec de la recherche de live pour la chaîne ${channelId} : ${error.message}`);
     }
   }
 
