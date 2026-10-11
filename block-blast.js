@@ -3,7 +3,8 @@
 
 // ========================================
 // BLOCK BLAST — HUSKYMICHEL
-// Version améliorée : glisser-déposer et aperçu
+// Version complète : aperçu, glisser-déposer,
+// animation de disparition et plein écran
 // ========================================
 
 const SIZE = 8;
@@ -37,6 +38,181 @@ if (
 }
 
 // ========================================
+// STYLES AJOUTÉS PAR JAVASCRIPT
+// ========================================
+
+const extraStyles = document.createElement("style");
+
+extraStyles.textContent = `
+  .board-cell,
+  .piece-option {
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .board-cell {
+    perspective: 500px;
+  }
+
+  .board-cell.flip-clear {
+    animation: hmBlockFlipClear 450ms ease-in forwards;
+    transform-origin: center;
+    pointer-events: none;
+  }
+
+  @keyframes hmBlockFlipClear {
+    0% {
+      transform: rotateX(0deg) scale(1);
+      opacity: 1;
+    }
+    45% {
+      transform: rotateX(90deg) scale(.9);
+      opacity: 1;
+    }
+    75% {
+      transform: rotateX(90deg) scale(.65);
+      opacity: .6;
+    }
+    100% {
+      transform: rotateX(0deg) scale(.15);
+      opacity: 0;
+    }
+  }
+
+  .hm-fullscreen-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 8px 0 14px;
+    padding: 10px 16px;
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 10px;
+    background: #263858;
+    color: #fff;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  .hm-fullscreen-button:hover {
+    background: #354c72;
+  }
+
+  .hm-fullscreen-button:focus-visible {
+    outline: 2px solid #46a6ff;
+    outline-offset: 3px;
+  }
+
+  .game-container:fullscreen,
+  #game-container:fullscreen,
+  main:fullscreen {
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    overflow-y: auto;
+    padding: 20px;
+    background: #17213b;
+    color: white;
+  }
+
+  :root:fullscreen {
+    overflow: auto;
+    background: #17213b;
+  }
+
+  :root:fullscreen body {
+    min-height: 100%;
+    background: #17213b;
+  }
+
+  :fullscreen .board {
+    max-width: min(75vw, 65vh);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  :fullscreen #pieces {
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  @media (max-width: 600px) {
+    .hm-fullscreen-button {
+      padding: 9px 12px;
+    }
+
+    :fullscreen .board {
+      max-width: min(94vw, 58vh);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .board-cell.flip-clear {
+      animation-duration: 150ms;
+    }
+  }
+`;
+
+document.head.appendChild(extraStyles);
+
+// ========================================
+// BOUTON PLEIN ÉCRAN
+// ========================================
+
+const fullscreenButton = document.createElement("button");
+
+fullscreenButton.type = "button";
+fullscreenButton.className = "hm-fullscreen-button";
+fullscreenButton.textContent = "⛶ Plein écran";
+fullscreenButton.setAttribute("aria-label", "Activer le plein écran");
+
+const gameContainer =
+  document.querySelector(".game-container") ||
+  document.querySelector("#game-container") ||
+  boardElement.closest("main") ||
+  document.documentElement;
+
+const actionsContainer = document.querySelector(".game-actions");
+
+if (actionsContainer) {
+  actionsContainer.prepend(fullscreenButton);
+} else {
+  boardElement.parentElement.insertBefore(fullscreenButton, boardElement);
+}
+
+fullscreenButton.addEventListener("click", async () => {
+  try {
+    if (document.fullscreenElement) {
+      await document.exitFullscreen();
+    } else {
+      await gameContainer.requestFullscreen();
+    }
+  } catch (error) {
+    statusElement.textContent =
+      "Le plein écran n'est pas disponible sur ce navigateur.";
+  }
+});
+
+document.addEventListener("fullscreenchange", () => {
+  const active = Boolean(document.fullscreenElement);
+
+  fullscreenButton.textContent = active
+    ? "⛶ Quitter le plein écran"
+    : "⛶ Plein écran";
+
+  fullscreenButton.setAttribute(
+    "aria-label",
+    active ? "Quitter le plein écran" : "Activer le plein écran"
+  );
+});
+
+// ========================================
 // FORMES DES BLOCS
 // ========================================
 
@@ -56,13 +232,13 @@ const SHAPES = [
   [[0, 0], [1, 0], [1, 1]],
   [[0, 1], [1, 0], [1, 1]],
 
-  // Carré de 2 × 2
+  // Carré 2 × 2
   [
     [0, 0], [0, 1],
     [1, 0], [1, 1]
   ],
 
-  // Carré de 3 × 3
+  // Carré 3 × 3
   [
     [0, 0], [0, 1], [0, 2],
     [1, 0], [1, 1], [1, 2],
@@ -116,7 +292,7 @@ let gameOver = false;
 let dragging = false;
 
 // ========================================
-// SAUVEGARDE
+// SAUVEGARDE DU RECORD
 // ========================================
 
 function readBestScore() {
@@ -135,6 +311,10 @@ function saveBestScore() {
   }
 }
 
+// ========================================
+// THÈMES
+// ========================================
+
 function loadTheme() {
   try {
     const saved = localStorage.getItem(THEME_KEY);
@@ -144,7 +324,7 @@ function loadTheme() {
       themeSelect.value = saved;
     }
   } catch {
-    // Thème par défaut.
+    // Le thème par défaut reste disponible.
   }
 
   document.body.dataset.theme = themeSelect.value;
@@ -232,9 +412,8 @@ function renderBoard() {
       cell.style.aspectRatio = "1";
       cell.style.padding = "0";
       cell.style.border = "0";
+      cell.style.touchAction = "none";
       cell.style.cursor = gameOver ? "default" : "pointer";
-      cell.style.transition =
-        "background-color 100ms ease, transform 100ms ease";
 
       const value = board[r][c];
 
@@ -252,13 +431,13 @@ function renderBoard() {
       });
 
       cell.addEventListener("pointerenter", () => {
-        if (selectedPiece !== -1) {
+        if (selectedPiece !== -1 && !busy) {
           showPreview(r, c);
         }
       });
 
       cell.addEventListener("focus", () => {
-        if (selectedPiece !== -1) {
+        if (selectedPiece !== -1 && !busy) {
           showPreview(r, c);
         }
       });
@@ -269,7 +448,7 @@ function renderBoard() {
 }
 
 // ========================================
-// AFFICHAGE DES BLOCS
+// AFFICHAGE DES TROIS BLOCS
 // ========================================
 
 function renderPieces() {
@@ -285,6 +464,7 @@ function renderPieces() {
 
     button.type = "button";
     button.className = "piece-option";
+
     button.setAttribute(
       "aria-label",
       `Sélectionner le bloc ${index + 1}`
@@ -296,6 +476,7 @@ function renderPieces() {
     button.style.placeItems = "center";
     button.style.padding = "8px";
     button.style.borderRadius = "12px";
+    button.style.touchAction = "none";
 
     button.style.border =
       selectedPiece === index
@@ -308,10 +489,7 @@ function renderPieces() {
         : "rgba(255,255,255,0.04)";
 
     button.style.cursor = piece.used ? "default" : "grab";
-    button.style.touchAction = "none";
     button.style.opacity = piece.used ? "0.2" : "1";
-    button.style.transition =
-      "border 120ms ease, background 120ms ease, transform 120ms ease";
 
     if (piece.used) {
       button.disabled = true;
@@ -359,7 +537,7 @@ function renderPieces() {
 
     button.appendChild(shape);
 
-    // Cliquer pour sélectionner le bloc.
+    // Cliquer pour sélectionner un bloc.
     button.addEventListener("click", () => {
       if (busy || gameOver || piece.used || dragging) return;
 
@@ -371,13 +549,15 @@ function renderPieces() {
       renderBoard();
     });
 
-    // Prendre le bloc pour le déplacer.
+    // Prendre un bloc sans provoquer le défilement de la page.
     button.addEventListener("pointerdown", (event) => {
       if (busy || gameOver || piece.used) return;
 
       if (event.pointerType === "mouse" && event.button !== 0) {
         return;
       }
+
+      event.preventDefault();
 
       selectedPiece = index;
       dragging = true;
@@ -388,7 +568,21 @@ function renderPieces() {
       statusElement.textContent =
         "Déplace le bloc sur le plateau !";
 
-      renderPieces();
+      // Ne pas recréer les boutons ici :
+      // cela évite d'interrompre le glisser-déposer.
+      piecesElement.querySelectorAll(".piece-option")
+        .forEach((item, itemIndex) => {
+          item.style.border =
+            itemIndex === index
+              ? "2px solid #ffffff"
+              : "2px solid rgba(255,255,255,0.10)";
+
+          item.style.background =
+            itemIndex === index
+              ? "rgba(70,166,255,0.22)"
+              : "rgba(255,255,255,0.04)";
+        });
+
       renderBoard();
     });
 
@@ -400,16 +594,48 @@ function renderPieces() {
 // GLISSER-DÉPOSER
 // ========================================
 
+document.addEventListener("pointermove", (event) => {
+  if (!dragging || selectedPiece < 0 || busy) return;
+
+  const element = document.elementFromPoint(
+    event.clientX,
+    event.clientY
+  );
+
+  const target = element instanceof Element
+    ? element.closest(".board-cell")
+    : null;
+
+  if (!target || !boardElement.contains(target)) {
+    clearPreview();
+
+    statusElement.textContent =
+      "Dépose ton bloc sur le plateau !";
+
+    return;
+  }
+
+  showPreview(
+    Number(target.dataset.row),
+    Number(target.dataset.col)
+  );
+});
+
 document.addEventListener("pointerup", (event) => {
   if (!dragging) return;
 
-  dragging = false;
+  const element = document.elementFromPoint(
+    event.clientX,
+    event.clientY
+  );
 
-  const target = event.target instanceof Element
-    ? event.target.closest(".board-cell")
+  const target = element instanceof Element
+    ? element.closest(".board-cell")
     : null;
 
-  if (target) {
+  dragging = false;
+
+  if (target && boardElement.contains(target)) {
     const row = Number(target.dataset.row);
     const col = Number(target.dataset.col);
 
@@ -432,12 +658,13 @@ document.addEventListener("pointercancel", () => {
 
   dragging = false;
   clearPreview();
+
   renderPieces();
   renderBoard();
 });
 
 // ========================================
-// PRÉVISUALISATION DES LIGNES ET COLONNES
+// APERÇU DES PLACEMENTS ET DES LIGNES
 // ========================================
 
 function showPreview(row, col) {
@@ -456,6 +683,7 @@ function showPreview(row, col) {
   const piece = pieces[selectedPiece];
   const valid = canPlace(piece, row, col);
 
+  // Position impossible : cases rouges.
   if (!valid) {
     piece.cells.forEach(([dr, dc]) => {
       const r = row + dr;
@@ -479,7 +707,7 @@ function showPreview(row, col) {
     return;
   }
 
-  // Simuler le placement sans modifier le vrai plateau.
+  // Simuler le placement.
   const simulated = board.map((line) => line.slice());
 
   piece.cells.forEach(([dr, dc]) => {
@@ -510,7 +738,7 @@ function showPreview(row, col) {
     if (full) completedCols.push(c);
   }
 
-  // Prévisualiser le bloc à poser.
+  // Afficher les blocs à poser.
   piece.cells.forEach(([dr, dc]) => {
     const cell = getCell(row + dr, col + dc);
 
@@ -521,7 +749,7 @@ function showPreview(row, col) {
     }
   });
 
-  // Prévisualiser les lignes complètes dans la couleur du bloc.
+  // Identifier les cases des lignes complètes.
   const highlighted = new Set();
 
   completedRows.forEach((r) => {
@@ -536,6 +764,7 @@ function showPreview(row, col) {
     }
   });
 
+  // Montrer les lignes dans la couleur du bloc sélectionné.
   highlighted.forEach((key) => {
     const [r, c] = key.split(",").map(Number);
     const cell = getCell(r, c);
@@ -546,8 +775,7 @@ function showPreview(row, col) {
     cell.style.opacity = "1";
     cell.style.transform = "scale(0.94)";
     cell.style.boxShadow =
-      "inset 0 0 0 2px rgba(255,255,255,0.75), 0 0 8px " +
-      piece.color;
+      `inset 0 0 0 2px rgba(255,255,255,0.75), 0 0 8px ${piece.color}`;
   });
 
   if (highlighted.size > 0) {
@@ -566,6 +794,7 @@ function clearPreview() {
     const c = Number(cell.dataset.col);
     const value = board[r][c];
 
+    cell.classList.remove("flip-clear");
     cell.style.backgroundColor = value ? value.color : "";
     cell.style.opacity = "1";
     cell.style.transform = "";
@@ -582,7 +811,7 @@ function getCell(row, col) {
 }
 
 // ========================================
-// VALIDATION DU PLACEMENT
+// VÉRIFIER SI UN BLOC PEUT ÊTRE POSÉ
 // ========================================
 
 function canPlace(piece, row, col) {
@@ -638,7 +867,7 @@ async function placeSelected(row, col) {
 
   addScore(piece.cells.length);
 
-  // Détecter les lignes et colonnes complètes.
+  // Détecter les lignes complètes.
   const completedRows = [];
   const completedCols = [];
 
@@ -661,7 +890,7 @@ async function placeSelected(row, col) {
     if (full) completedCols.push(c);
   }
 
-  // Rassembler les cases à effacer sans doublons.
+  // Regrouper les cases à effacer sans doublons.
   const clearedCells = new Set();
 
   completedRows.forEach((r) => {
@@ -680,8 +909,7 @@ async function placeSelected(row, col) {
   renderPieces();
 
   if (clearedCells.size > 0) {
-    // Toutes les cases de la ligne/colonne prennent
-    // temporairement la couleur du bloc posé.
+    // Colorer les cases qui vont disparaître.
     clearedCells.forEach((key) => {
       const [r, c] = key.split(",").map(Number);
       const cell = getCell(r, c);
@@ -699,9 +927,22 @@ async function placeSelected(row, col) {
     statusElement.textContent =
       `✨ ${lineCount} ligne${lineCount > 1 ? "s" : ""} complétée${lineCount > 1 ? "s" : ""} !`;
 
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    // Laisser voir la couleur avant l'animation.
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
-    // Effacer les cases complétées.
+    // Animation de rotation et de disparition.
+    clearedCells.forEach((key) => {
+      const [r, c] = key.split(",").map(Number);
+      const cell = getCell(r, c);
+
+      if (cell) {
+        cell.classList.add("flip-clear");
+      }
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 450));
+
+    // Effacer les cases du plateau après l'animation.
     clearedCells.forEach((key) => {
       const [r, c] = key.split(",").map(Number);
       board[r][c] = null;
@@ -713,7 +954,7 @@ async function placeSelected(row, col) {
     statusElement.textContent = "Bien joué !";
   }
 
-  // Générer trois nouveaux blocs quand les trois sont utilisés.
+  // Donner trois nouveaux blocs quand les trois sont utilisés.
   if (pieces.every((p) => p.used)) {
     createNewPieces();
     renderPieces();
@@ -785,7 +1026,7 @@ function endGame() {
 }
 
 // ========================================
-// BOUTONS
+// BOUTONS DU JEU
 // ========================================
 
 newGameButton.addEventListener("click", startGame);
