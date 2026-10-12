@@ -86,7 +86,7 @@ style.textContent = `
       0 10px 20px rgba(0,0,0,.16),
       inset 0 1px 0 rgba(255,255,255,.12);
     transform: translateY(0);
-    animation: hmPieceFloat 2.5s ease-in-out infinite;
+    animation: hmPieceFloat 1.65s ease-in-out infinite;
     transition:
       transform 180ms ease,
       box-shadow 180ms ease,
@@ -139,8 +139,57 @@ style.textContent = `
   }
 
   @keyframes hmPieceFloat {
-    0%, 100% { translate: 0 0; }
-    50% { translate: 0 -5px; }
+    0%, 100% {
+      translate: 0 0;
+      filter: drop-shadow(0 5px 3px rgba(0,0,0,.18));
+    }
+    50% {
+      translate: 0 -10px;
+      filter: drop-shadow(0 12px 7px rgba(0,0,0,.32));
+    }
+  }
+
+  /* Pièce lumineuse qui suit le pointeur pendant le déplacement */
+  .hm-drag-ghost {
+    position: fixed;
+    z-index: 10002;
+    display: grid;
+    gap: 4px;
+    pointer-events: none;
+    transform: translate(-50%, -72%) scale(1.08);
+    transform-origin: center;
+    filter: drop-shadow(0 12px 10px rgba(0,0,0,.48));
+    animation: hmGhostFloat .48s ease-in-out infinite alternate;
+    will-change: left, top, transform;
+  }
+
+  .hm-drag-ghost span {
+    display: block;
+    border-radius: 5px;
+    border-top: 2px solid rgba(255,255,255,.55);
+    border-left: 1px solid rgba(255,255,255,.30);
+    border-bottom: 4px solid rgba(0,0,0,.28);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 3px 5px rgba(0,0,0,.18);
+  }
+
+  @keyframes hmGhostFloat {
+    from { transform: translate(-50%, -72%) scale(1.04) rotate(-1deg); }
+    to { transform: translate(-50%, -82%) scale(1.10) rotate(1deg); }
+  }
+
+  .board-cell.hm-preview-valid {
+    opacity: .72 !important;
+    transform: scale(.90) translateY(-1px) !important;
+    box-shadow:
+      inset 0 0 0 2px rgba(255,255,255,.88),
+      0 5px 11px rgba(0,0,0,.25),
+      0 0 15px var(--preview-glow, rgba(70,166,255,.5)) !important;
+  }
+
+  .board-cell.hm-preview-invalid {
+    opacity: .72 !important;
+    transform: scale(.90) !important;
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,.65), 0 0 10px rgba(255,83,100,.35) !important;
   }
 
   @keyframes hmPieceUsed {
@@ -251,6 +300,28 @@ style.textContent = `
     background: #17213b;
   }
 
+  :fullscreen #game-modal:not(.hidden),
+  :-webkit-full-screen #game-modal:not(.hidden) {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 10000 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 20px;
+    background: rgba(5,10,24,.86);
+    backdrop-filter: blur(5px);
+  }
+
+  :fullscreen #game-modal .modal-card,
+  :-webkit-full-screen #game-modal .modal-card {
+    position: relative;
+    z-index: 10001;
+  }
+
   :fullscreen .board {
     max-width: min(75vw, 65vh);
     margin-left: auto;
@@ -357,8 +428,7 @@ let musicVolume = 0.25;
 try {
   const savedEnabled = localStorage.getItem(MUSIC_KEY);
   if (savedEnabled !== null) musicEnabled = savedEnabled === "true";
-
-  const savedVolume = localStorage.getItem(MUSIC_VOLUME_KEY);
+    const savedVolume = localStorage.getItem(MUSIC_VOLUME_KEY);
   if (savedVolume !== null) {
     const parsed = Number(savedVolume);
     if (Number.isFinite(parsed)) {
@@ -410,11 +480,11 @@ function createAudioContext() {
 
   musicMaster.connect(compressor);
 
-effectsMaster = audioContext.createGain();
-effectsMaster.gain.value = 0.75;
-effectsMaster.connect(compressor);
+  effectsMaster = audioContext.createGain();
+  effectsMaster.gain.value = 0.75;
+  effectsMaster.connect(compressor);
 
-compressor.connect(audioContext.destination);
+  compressor.connect(audioContext.destination);
 
   return true;
 }
@@ -724,6 +794,11 @@ const gameContainer =
   boardElement.closest("main") ||
   document.body;
 
+// Le message de fin doit faire partie de la zone en plein écran.
+if (!gameContainer.contains(modalElement)) {
+  gameContainer.appendChild(modalElement);
+}
+
 const actionsContainer = document.querySelector(".game-actions");
 
 if (actionsContainer) {
@@ -792,7 +867,6 @@ document.addEventListener("fullscreenchange", () => {
     ? "⛶ Quitter le plein écran"
     : "⛶ Plein écran";
 });
-
 // Bannière de combo
 const comboBanner = document.createElement("div");
 comboBanner.className = "hm-combo-banner";
@@ -870,6 +944,7 @@ let bestScore = readBestScore();
 let busy = false;
 let gameOver = false;
 let dragging = false;
+let dragGhost = null;
 
 // ========================================
 // SAUVEGARDE ET THÈMES
@@ -920,6 +995,8 @@ function startGame() {
   busy = false;
   gameOver = false;
   dragging = false;
+  removeDragGhost();
+  clearPreview();
 
   modalElement.classList.add("hidden");
   comboBanner.classList.remove("show");
@@ -1109,6 +1186,7 @@ function renderPieces() {
 
       selectedPiece = index;
       dragging = true;
+      createDragGhost(piece, event.clientX, event.clientY);
       statusElement.textContent = "Déplace le bloc sur le plateau !";
 
       piecesElement.querySelectorAll(".piece-option").forEach((item, i) => {
@@ -1125,12 +1203,64 @@ function renderPieces() {
 }
 
 // ========================================
+// PIÈCE FLOTTANTE PENDANT LE GLISSER-DÉPOSER
+// ========================================
+
+function createDragGhost(piece, x, y) {
+  removeDragGhost();
+  if (!piece) return;
+
+  const maxRow = Math.max(...piece.cells.map(([r]) => r)) + 1;
+  const maxCol = Math.max(...piece.cells.map(([, c]) => c)) + 1;
+  const boardRect = boardElement.getBoundingClientRect();
+  const boardGap = Math.max(2, parseFloat(getComputedStyle(boardElement).gap) || 4);
+  const cellSize = Math.max(15, Math.min(34, (boardRect.width - 14 - boardGap * (SIZE - 1)) / SIZE));
+
+  dragGhost = document.createElement("div");
+  dragGhost.className = "hm-drag-ghost";
+  dragGhost.setAttribute("aria-hidden", "true");
+  dragGhost.style.gridTemplateColumns = `repeat(${maxCol}, ${cellSize}px)`;
+  dragGhost.style.gridTemplateRows = `repeat(${maxRow}, ${cellSize}px)`;
+
+  for (let r = 0; r < maxRow; r++) {
+    for (let c = 0; c < maxCol; c++) {
+      const block = document.createElement("span");
+      const filled = piece.cells.some(([pr, pc]) => pr === r && pc === c);
+      if (filled) {
+        block.style.background = `linear-gradient(145deg, ${piece.color}, ${piece.color})`;
+      } else {
+        block.style.visibility = "hidden";
+      }
+      dragGhost.appendChild(block);
+    }
+  }
+
+  // Le fantôme reste dans l'élément plein écran pour rester visible en fullscreen.
+  (document.fullscreenElement || gameContainer).appendChild(dragGhost);
+  moveDragGhost(x, y);
+}
+
+function moveDragGhost(x, y) {
+  if (!dragGhost) return;
+  dragGhost.style.left = `${x}px`;
+  dragGhost.style.top = `${y}px`;
+}
+
+function removeDragGhost() {
+  if (dragGhost) {
+    dragGhost.remove();
+    dragGhost = null;
+  }
+}
+
+// ========================================
 // GLISSER-DÉPOSER
 // ========================================
 
 document.addEventListener("pointermove", (event) => {
   if (!dragging || selectedPiece < 0 || busy) return;
 
+  moveDragGhost(event.clientX, event.clientY);
   const element = document.elementFromPoint(event.clientX, event.clientY);
   const target = element instanceof Element
     ? element.closest(".board-cell")
@@ -1152,6 +1282,7 @@ document.addEventListener("pointerup", (event) => {
     : null;
 
   dragging = false;
+  removeDragGhost();
 
   if (target && boardElement.contains(target)) {
     placeSelected(Number(target.dataset.row), Number(target.dataset.col));
@@ -1166,9 +1297,11 @@ document.addEventListener("pointerup", (event) => {
 });
 
 document.addEventListener("pointercancel", () => {
+
   if (!dragging) return;
 
   dragging = false;
+  removeDragGhost();
   clearPreview();
   renderPieces();
   renderBoard();
@@ -1196,8 +1329,11 @@ function showPreview(row, col) {
 
       const cell = getCell(r,c);
       if (cell) {
+        cell.classList.add("hm-preview-invalid");
         cell.style.backgroundColor = "#ff5364";
-        cell.style.opacity = ".65";
+        cell.style.opacity = ".72";
+        cell.style.transform = "scale(.90)";
+        cell.style.boxShadow = "inset 0 0 0 2px rgba(255,255,255,.65), 0 0 10px rgba(255,83,100,.35)";
       }
     });
 
@@ -1225,8 +1361,12 @@ function showPreview(row, col) {
   piece.cells.forEach(([dr,dc]) => {
     const cell = getCell(row+dr,col+dc);
     if (cell) {
+      cell.classList.add("hm-preview-valid");
+      cell.style.setProperty("--preview-glow", piece.color);
       cell.style.backgroundColor = piece.color;
-      cell.style.transform = "scale(.94)";
+      cell.style.opacity = ".72";
+      cell.style.transform = "scale(.90) translateY(-1px)";
+      cell.style.boxShadow = `inset 0 0 0 2px rgba(255,255,255,.88), 0 5px 11px rgba(0,0,0,.25), 0 0 15px ${piece.color}`;
     }
   });
 
@@ -1246,8 +1386,8 @@ function showPreview(row, col) {
     if (!cell) return;
 
     cell.style.backgroundColor = piece.color;
-    cell.style.opacity = "1";
-    cell.style.transform = "scale(.94)";
+    cell.style.opacity = ".84";
+    cell.style.transform = "scale(.92)";
     cell.style.boxShadow =
       `inset 0 0 0 2px rgba(255,255,255,.8), 0 0 12px ${piece.color}`;
   });
@@ -1263,7 +1403,8 @@ function clearPreview() {
     const c = Number(cell.dataset.col);
     const value = board[r][c];
 
-    cell.classList.remove("flip-clear");
+    cell.classList.remove("flip-clear", "hm-preview-valid", "hm-preview-invalid");
+    cell.style.removeProperty("--preview-glow");
     cell.style.backgroundColor = value ? value.color : "";
     cell.style.opacity = "1";
     cell.style.transform = "";
@@ -1414,7 +1555,7 @@ async function placeSelected(row, col) {
   piece.used = true;
   selectedPiece = -1;
   addScore(piece.cells.length * 5);
-playPlaceSound();
+  playPlaceSound();
 
   const completedRows = [];
   const completedCols = [];
@@ -1445,21 +1586,21 @@ playPlaceSound();
 
     const lineCount = completedRows.length + completedCols.length;
 
-// Récompense pour chaque ligne ou colonne effacée.
-const lineBonus = lineCount * 100;
+    // Récompense pour chaque ligne ou colonne effacée.
+    const lineBonus = lineCount * 100;
 
-// Bonus croissant pour les effacements multiples.
-const multiLineBonus = lineCount >= 2
-  ? (lineCount - 1) * 75
-  : 0;
+    // Bonus croissant pour les effacements multiples.
+    const multiLineBonus = lineCount >= 2
+      ? (lineCount - 1) * 75
+      : 0;
 
-// Bonus de série lorsque le joueur efface des lignes
-// lors de plusieurs placements consécutifs.
-const comboBonus = comboCount > 1
-  ? (comboCount - 1) * 25
-  : 0;
+    // Bonus de série lorsque le joueur efface des lignes
+    // lors de plusieurs placements consécutifs.
+    const comboBonus = comboCount > 1
+      ? (comboCount - 1) * 25
+      : 0;
 
-const totalClearBonus = lineBonus + multiLineBonus + comboBonus;
+    const totalClearBonus = lineBonus + multiLineBonus + comboBonus;
 
     clearedCells.forEach((key) => {
       const [r,c] = key.split(",").map(Number);
@@ -1478,15 +1619,15 @@ const totalClearBonus = lineBonus + multiLineBonus + comboBonus;
 
     burstParticles(clearedCells, piece.color);
     showCombo(lineCount, totalClearBonus);
-playClearSound(lineCount);
+    playClearSound(lineCount);
 
-if (lineCount >= 4) {
-  announceGameEvent("Incredible!");
-} else if (lineCount >= 2) {
-  announceGameEvent("Amazing!");
-} else {
-  announceGameEvent("Nice!");
-}
+    if (lineCount >= 4) {
+      announceGameEvent("Incredible!");
+    } else if (lineCount >= 2) {
+      announceGameEvent("Amazing!");
+    } else {
+      announceGameEvent("Nice!");
+    }
 
     await new Promise((resolve) => setTimeout(resolve, 120));
 
@@ -1505,20 +1646,20 @@ if (lineCount >= 4) {
 
     addScore(clearedCells.size * 2 + totalClearBonus);
 
-renderBoard();
+    renderBoard();
 
-// Bonus exceptionnel si le plateau est entièrement vide.
-const boardIsEmpty = board.every(row =>
-  row.every(cell => cell === null)
-);
+    // Bonus exceptionnel si le plateau est entièrement vide.
+    const boardIsEmpty = board.every(row =>
+      row.every(cell => cell === null)
+    );
 
-if (boardIsEmpty) {
-  addScore(1000);
-  statusElement.textContent =
-    "PERFECT CLEAR! +1000 points !";
-  playPerfectClearSound();
-  announceGameEvent("Perfect Clear!");
-}
+    if (boardIsEmpty) {
+      addScore(1000);
+      statusElement.textContent =
+        "PERFECT CLEAR! +1000 points !";
+      playPerfectClearSound();
+      announceGameEvent("Perfect Clear!");
+    }
   } else {
     comboCount = 0;
     statusElement.textContent = "Bien joué ! Continue comme ça !";
@@ -1578,6 +1719,7 @@ function endGame() {
   gameOver = true;
   selectedPiece = -1;
   dragging = false;
+  removeDragGhost();
 
   statusElement.textContent = "Partie terminée !";
   modalMessage.textContent =
@@ -1597,4 +1739,3 @@ restartButton.addEventListener("click", startGame);
 
 loadTheme();
 updateScore();
-startGame();
