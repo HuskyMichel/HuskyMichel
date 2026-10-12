@@ -404,7 +404,80 @@ style.textContent = `
     .board-cell.flip-clear { animation-duration: .2s !important; }
     .hm-combo-banner, .hm-particle { animation-duration: .2s !important; }
   }
-`;
+`:fullscreen .game-container.hm-fullscreen-layout,
+:-webkit-full-screen .game-container.hm-fullscreen-layout {
+  width: 100vw !important;
+  max-width: none !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 10px 18px !important;
+  overflow: auto !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 28vw) !important;
+  grid-template-areas:
+    "header header"
+    "score score"
+    "board pieces"
+    "settings settings"
+    "footer footer" !important;
+  align-content: start !important;
+  gap: 10px 16px !important;
+}
+
+:fullscreen .game-container.hm-fullscreen-layout .top-header {
+  grid-area: header;
+}
+
+:fullscreen .game-container.hm-fullscreen-layout .score-panel {
+  grid-area: score;
+}
+
+:fullscreen .game-container.hm-fullscreen-layout .board-section {
+  grid-area: board;
+  margin: 0 !important;
+}
+
+:fullscreen .game-container.hm-fullscreen-layout .pieces-section {
+  grid-area: pieces;
+  margin: 0 !important;
+  align-self: center;
+}
+
+:fullscreen .game-container.hm-fullscreen-layout .settings-panel {
+  grid-area: settings;
+}
+
+:fullscreen .game-container.hm-fullscreen-layout .footer-note {
+  grid-area: footer;
+}
+
+:fullscreen .game-container.hm-fullscreen-layout #board,
+:fullscreen .game-container.hm-fullscreen-layout .board {
+  width: min(100%, 62vh) !important;
+  margin: auto !important;
+}
+
+.board-cell.hm-preview-valid {
+  filter: blur(1.4px) !important;
+  opacity: .48 !important;
+  transform: translateY(4px) scale(.92) !important;
+  box-shadow:
+    0 8px 14px rgba(0,0,0,.32),
+    0 0 16px var(--preview-glow, rgba(70,166,255,.55)) !important;
+}
+
+@media (max-width: 700px) {
+  :fullscreen .game-container.hm-fullscreen-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas:
+      "header" "score" "board" "pieces" "settings" "footer" !important;
+  }
+
+  :fullscreen .game-container.hm-fullscreen-layout #board,
+  :fullscreen .game-container.hm-fullscreen-layout .board {
+    width: min(100%, 48vh, 88vw) !important;
+  }
+};
 
 document.head.appendChild(style);
 
@@ -863,9 +936,19 @@ fullscreenButton.addEventListener("click", async () => {
 });
 
 document.addEventListener("fullscreenchange", () => {
-  fullscreenButton.textContent = document.fullscreenElement
+  const isFullscreen = document.fullscreenElement === gameContainer;
+
+  fullscreenButton.textContent = isFullscreen
     ? "⛶ Quitter le plein écran"
     : "⛶ Plein écran";
+
+  gameContainer.classList.toggle("hm-fullscreen-layout", isFullscreen);
+
+  requestAnimationFrame(() => {
+    if (selectedPiece >= 0) clearPreview();
+    renderBoard();
+    renderPieces();
+  });
 });
 // Bannière de combo
 const comboBanner = document.createElement("div");
