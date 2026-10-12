@@ -1,4 +1,3 @@
-
 /* ========================================
    BLOCK BLAST - HUSKYMICHEL
    Style indépendant du reste du site
@@ -282,15 +281,26 @@ h2 {
 
 /* APERÇU D'UN PLACEMENT VALIDE */
 .cell.preview-valid {
-  background: #6ce9a0;
+  background: #6ce9a0 !important;
+  opacity: 0.72;
+
+  transform: scale(0.92);
 
   box-shadow:
-    inset 0 0 0 2px #c8ffda;
+    inset 0 0 0 2px #d5ffe2,
+    0 4px 10px #0004,
+    0 0 12px #6ce9a060;
 }
 
 /* APERÇU D'UN PLACEMENT INVALIDE */
 .cell.preview-invalid {
-  background: #ff6868;
+  background: #ff6868 !important;
+  opacity: 0.65;
+  transform: scale(0.92);
+
+  box-shadow:
+    inset 0 0 0 2px #ffd0d0,
+    0 0 10px #ff686860;
 }
 
 /* ANIMATION D'EXPLOSION */
@@ -559,6 +569,152 @@ h2 {
     transform: scale(1);
     opacity: 1;
   }
+}
+/* ========================================
+   FENÊTRE DE FIN EN PLEIN ÉCRAN
+======================================== */
+
+/* Plein écran : garder le plateau et les pièces accessibles */
+:fullscreen .game-container,
+:-webkit-full-screen .game-container {
+  display: block !important;
+  width: 100vw !important;
+  max-width: none !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 12px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+  background: var(--page-bg, #10172a) !important;
+}
+
+:fullscreen .game-container .board-section,
+:fullscreen .game-container .pieces-section,
+:fullscreen .game-container .settings-panel {
+  display: block !important;
+  visibility: visible !important;
+  position: relative !important;
+  width: 100% !important;
+  height: auto !important;
+  margin-bottom: 12px !important;
+}
+
+:fullscreen .game-container #board,
+:fullscreen .game-container .board {
+  width: min(100%, 72vh, 650px) !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+}
+
+:fullscreen .game-container #pieces,
+:fullscreen .game-container .pieces-tray {
+  display: grid !important;
+  visibility: visible !important;
+  width: 100% !important;
+  max-width: 700px !important;
+  margin: 0 auto !important;
+}
+
+/* ========================================
+   PIÈCES FLOTTANTES ET OMBRE AU SOL
+======================================== */
+
+.piece-slot {
+  position: relative;
+  overflow: visible;
+}
+
+/* Ombre sous chaque pièce : elle se resserre quand la pièce monte */
+.piece-slot::after {
+  content: "";
+  position: absolute;
+  left: 25%;
+  bottom: 17px;
+  width: 50%;
+  height: 8px;
+  border-radius: 50%;
+  background: #0007;
+  filter: blur(5px);
+  pointer-events: none;
+  animation: hmPieceShadow 1.8s ease-in-out infinite;
+}
+
+.piece-shape {
+  position: relative;
+  z-index: 1;
+  animation: hmPieceFloat 1.8s ease-in-out infinite;
+  filter: drop-shadow(0 5px 4px #0005);
+  will-change: transform;
+}
+
+.piece-slot:nth-child(2) .piece-shape,
+.piece-slot:nth-child(2)::after {
+  animation-delay: 0.25s;
+}
+
+.piece-slot:nth-child(3) .piece-shape,
+.piece-slot:nth-child(3)::after {
+  animation-delay: 0.5s;
+}
+
+@keyframes hmPieceFloat {
+  0%, 100% {
+    transform: translateY(0);
+    filter: drop-shadow(0 5px 4px #0005);
+  }
+
+  50% {
+    transform: translateY(-11px);
+    filter: drop-shadow(0 11px 7px #0007);
+  }
+}
+
+@keyframes hmPieceShadow {
+  0%, 100% {
+    transform: scaleX(1);
+    opacity: 0.55;
+  }
+
+  50% {
+    transform: scaleX(0.68);
+    opacity: 0.28;
+  }
+}
+
+.piece-slot:hover .piece-shape {
+  animation-play-state: paused;
+  transform: translateY(-5px) scale(1.06);
+  filter: drop-shadow(0 8px 8px #0007);
+}
+
+.piece-slot:hover::after {
+  animation-play-state: paused;
+}
+
+/* Pièce déplacée par le pointeur (créée par le JavaScript) */
+.hm-drag-ghost {
+  position: fixed;
+  z-index: 20000;
+  display: grid;
+  gap: 4px;
+  pointer-events: none;
+  transform: translate(-50%, -65%);
+  filter: drop-shadow(0 8px 8px #0008);
+}
+
+.hm-drag-ghost span {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  box-shadow:
+    inset 0 -3px 0 #0003,
+    inset 0 2px 0 #ffffff55,
+    0 0 8px #ffffff20;
+}
+
+.hm-drag-ghost span[style*="visibility: hidden"] {
+  box-shadow: none;
 }
 
 /* ADAPTATION AUX PETITS ÉCRANS */
