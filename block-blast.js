@@ -1822,4 +1822,3 @@ restartButton.addEventListener("click", startGame);
 
 loadTheme();
 updateScore();
-startGame();
