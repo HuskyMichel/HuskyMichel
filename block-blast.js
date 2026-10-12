@@ -1820,5 +1820,14 @@ function endGame() {
 newGameButton.addEventListener("click", startGame);
 restartButton.addEventListener("click", startGame);
 
-loadTheme();
-updateScore();
+function initializeBlockBlast() {
+  loadTheme();
+  updateScore();
+  startGame();
+}
+
+if (document.readyState === "complete") {
+  requestAnimationFrame(initializeBlockBlast);
+} else {
+  window.addEventListener("load", initializeBlockBlast, { once: true });
+}
