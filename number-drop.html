@@ -5,167 +5,97 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#10131d">
-
     <title>Number Drop - HuskyMichel</title>
-
     <link rel="stylesheet" href="number-drop.css">
 </head>
+<body data-theme="blue">
 
-<body>
-
-    <main class="game">
-
-        <header class="top">
-            <div>
-                <h1 class="brand">NUMBER <span>DROP</span></h1>
-                <p class="subtitle">Un jeu HuskyMichel</p>
-            </div>
-
-            <button id="fullscreenBtn" class="small-button">
-                ⛶ Agrandir
-            </button>
-        </header>
-
-        <!-- STATISTIQUES -->
-
-        <section class="stats">
-
-            <div class="stat">
-                <span class="stat-label">SCORE</span>
-                <strong id="score">0</strong>
-            </div>
-
-            <div class="stat">
-                <span class="stat-label">RECORD</span>
-                <strong id="best">0</strong>
-            </div>
-
-            <div class="stat">
-                <span class="stat-label">PROCHAIN</span>
-                <strong id="next">2</strong>
-            </div>
-
-        </section>
-
-        <!-- OBJECTIF -->
-
-        <section class="goal-box">
-
-            <div class="goal-header">
-                <div>
-                    <span class="stat-label">OBJECTIF ACTUEL</span>
-                    <strong id="goal">16</strong>
-                </div>
-
-                <span id="goalStatus">
-                    À toi de jouer !
-                </span>
-            </div>
-
-            <div class="progress-bar">
-                <div id="progress" class="progress-fill"></div>
-            </div>
-
-        </section>
-
-        <!-- GRILLE DE JEU -->
-
-        <section class="board-container">
-
-            <div class="board-wrap">
-
-                <div
-                    id="board"
-                    class="board"
-                    role="grid"
-                    aria-label="Grille de Number Drop">
-                </div>
-
-                <!-- TRAITS ENTRE LES NOMBRES -->
-
-                <svg
-                    id="links"
-                    class="link-layer"
-                    aria-hidden="true">
-                </svg>
-
-            </div>
-
-        </section>
-
-        <!-- MESSAGE DU JEU -->
-
-        <p id="toast" class="toast" aria-live="polite">
-            Relie les nombres identiques !
-        </p>
-
-        <!-- COMMANDES -->
-
-        <section class="actions">
-
-            <button id="dropBtn" class="action-button primary">
-                ↓ Faire tomber un nombre
-            </button>
-
-            <button id="restartBtn" class="action-button">
-                ↻ Nouvelle partie
-            </button>
-
-        </section>
-
-        <!-- RÈGLES -->
-
-        <section class="instructions">
-
-            <h2>Comment jouer ?</h2>
-
-            <p>
-                <strong>1.</strong> Relie au moins deux nombres identiques
-                qui se touchent.
-            </p>
-
-            <p>
-                <strong>2.</strong> Les nombres reliés fusionnent pour
-                former un nombre deux fois plus grand.
-            </p>
-
-            <p>
-                <strong>3.</strong> Plus tu relies de nombres, plus tu
-                gagnes de points !
-            </p>
-
-            <p>
-                <strong>4.</strong> Atteins ton objectif pour le doubler
-                et continuer à progresser.
-            </p>
-
-        </section>
-
-    </main>
-
-    <!-- ÉCRAN DE FIN -->
-
-    <div id="overlay" class="overlay">
-
-        <div class="modal">
-
-            <h2>Partie terminée !</h2>
-
-            <p id="endText">
-                Il n'y a plus de place disponible.
-            </p>
-
-            <button id="playAgainBtn" class="action-button primary">
-                Rejouer
-            </button>
-
+<main class="game">
+    <header class="top">
+        <div>
+            <h1 class="brand">NUMBER <span>DROP</span></h1>
+            <p class="subtitle">Un jeu HuskyMichel</p>
         </div>
+        <button id="fullscreenBtn" class="small-button" type="button">⛶ Agrandir</button>
+    </header>
 
+    <section class="theme-row">
+        <span>🎨 Thème</span>
+        <select id="themeSelect" aria-label="Choisir un thème">
+            <option value="blue">Bleu</option>
+            <option value="purple">Violet</option>
+            <option value="green">Vert</option>
+            <option value="orange">Orange</option>
+        </select>
+    </section>
+
+    <section class="stats">
+        <div class="stat">
+            <span class="stat-label">SCORE</span>
+            <strong id="score">0</strong>
+        </div>
+        <div class="stat">
+            <span class="stat-label">RECORD</span>
+            <strong id="best">0</strong>
+        </div>
+        <div class="stat">
+            <span class="stat-label">PROCHAIN</span>
+            <strong id="next">2</strong>
+        </div>
+    </section>
+
+    <section class="goal-box">
+        <div class="goal-header">
+            <div>
+                <span class="stat-label">OBJECTIF ACTUEL</span>
+                <strong id="goal">16</strong>
+            </div>
+            <span id="goalStatus">À toi de jouer !</span>
+        </div>
+        <div class="progress-bar">
+            <div id="progress" class="progress-fill"></div>
+        </div>
+    </section>
+
+    <section class="board-container">
+        <div class="board-wrap">
+            <div id="board" class="board" role="grid"
+                 aria-label="Grille Number Drop"></div>
+            <svg id="links" class="link-layer" aria-hidden="true"></svg>
+        </div>
+    </section>
+
+    <p id="toast" class="toast" aria-live="polite">
+        Maintiens le clic et relie les nombres identiques !
+    </p>
+
+    <section class="actions">
+        <button id="restartBtn" class="action-button primary" type="button">
+            ↻ Nouvelle partie
+        </button>
+    </section>
+
+    <section class="instructions">
+        <h2>Comment jouer ?</h2>
+        <p><strong>1.</strong> Maintiens le clic et relie au moins deux nombres identiques qui se touchent horizontalement ou verticalement.</p>
+        <p><strong>2.</strong> Relâche pour fusionner les nombres reliés.</p>
+        <p><strong>3.</strong> Un nombre impair de blocs reliés donne un bonus.</p>
+        <p><strong>4.</strong> Les blocs descendent et les nouvelles cases sont remplies automatiquement.</p>
+        <p><strong>5.</strong> Atteins l'objectif pour le doubler.</p>
+    </section>
+</main>
+
+<div id="overlay" class="overlay" hidden>
+    <div class="modal">
+        <h2>Partie terminée !</h2>
+        <p id="endText">Plus aucune fusion possible.</p>
+        <button id="playAgainBtn" class="action-button primary" type="button">
+            Rejouer
+        </button>
     </div>
+</div>
 
-    <!-- SCRIPT DU JEU -->
-
-    <script src="number-drop.js"></script>
-
+<script src="number-drop.js"></script>
 </body>
 </html>
+
