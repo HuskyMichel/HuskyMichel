@@ -1,520 +1,453 @@
 
 "use strict";
 
-/* =========================================
-   NUMBER DROP — HUSKYMICHEL
-   MOTEUR DU JEU
-========================================= */
+// ========================================
+// NUMBER DROP — HUSKYMICHEL
+// ========================================
 
-(() => {
-    const COLS = 6;
-    const ROWS = 8;
-    const SIZE = COLS * ROWS;
-    const BEST_KEY = "hm_numberdrop_best_v1";
+const COLS = 5;
+const ROWS = 8;
+const TOTAL_CELLS = COLS * ROWS;
 
-    const COLORS = {
-        2: "#4b83e6",
-        4: "#28a9c9",
-        8: "#28b887",
-        16: "#84b83d",
-        32: "#e2ad35",
-        64: "#ef8740",
-        128: "#e45e75",
-        256: "#ba6be8",
-        512: "#8d7df5",
-        1024: "#e85bb9",
-        2048: "#f0d34e"
-    };
+const BEST_KEY = "hm_numberdrop_best_v1";
+const THEME_KEY = "hm_numberdrop_theme_v1";
 
-    const boardEl = document.getElementById("board");
-    const linksEl = document.getElementById("links");
+const boardEl = document.getElementById("board");
+const linksEl = document.getElementById("links");
 
-    const scoreEl = document.getElementById("score");
-    const bestEl = document.getElementById("best");
-    const nextEl = document.getElementById("next");
+const scoreEl = document.getElementById("score");
+const bestEl = document.getElementById("best");
+const goalEl = document.getElementById("goal");
+const nextEl = document.getElementById("next");
 
-    const goalEl = document.getElementById("goal");
-    const goalStatus = document.getElementById("goalStatus");
-    const progressEl = document.getElementById("progress");
+const restartBtn = document.getElementById("restartBtn");
+const dropBtn = document.getElementById("dropBtn");
 
-    const toast = document.getElementById("toast");
-    const overlay = document.getElementById("overlay");
-    const endText = document.getElementById("endText");
+if (!boardEl) {
+  throw new Error("La grille #board est introuvable dans number-drop.html");
+}
 
-    let cells = Array(SIZE).fill(0);
+const COLORS = {
+  2: "#57b8ff",
+  4: "#6385ff",
+  8: "#9568ff",
+  16: "#c566ff",
+  32: "#ff65bd",
+  64: "#ff7565",
+  128: "#ffad55",
+  256: "#f2d65c",
+  512: "#65dba0",
+  1024: "#42d9d0",
+  2048: "#f5f5ff"
+};
 
-    let score = 0;
-    let best = readBest();
-    let goal = 16;
-    let nextValue = 2;
+let grid = [];
+let cells = [];
 
-    let selected = [];
-    let dragging = false;
-    let gameOver = false;
-    let dropTimer = null;
+let score = 0;
+let best = Number(localStorage.getItem(BEST_KEY)) || 0;
+let goal = 16;
+let nextValue = 2;
 
-    bestEl.textContent = best;
+let selected = [];
+let isSelecting = false;
+let gameOver = false;
 
-    /* =====================================
-       SAUVEGARDE
-    ===================================== */
+// ========================================
+// OUTILS
+// ========================================
 
-    function readBest() {
-        try {
-            return Number(localStorage.getItem(BEST_KEY)) || 0;
-        } catch {
-            return 0;
-        }
+function randomValue() {
+  return Math.random() < 0.75 ? 2 : 4;
+}
+
+function randomIndex() {
+  return Math.floor(Math.random() * TOTAL_CELLS);
+}
+
+function rowOf(index) {
+  return Math.floor(index / COLS);
+}
+
+function colOf(index) {
+  return index % COLS;
+}
+
+function indexOf(row, col) {
+  return row * COLS + col;
+}
+
+function areNeighbors(a, b) {
+  const rowDifference = Math.abs(rowOf(a) - rowOf(b));
+  const colDifference = Math.abs(colOf(a) - colOf(b));
+
+  return rowDifference + colDifference === 1;
+}
+
+function formatNumber(value) {
+  return value >= 1000000
+    ? (value / 1000000).toFixed(1).replace(".0", "") + "M"
+    : value >= 1000
+      ? (value / 1000).toFixed(1).replace(".0", "") + "K"
+      : String(value);
+}
+
+// ========================================
+// CRÉATION DE LA GRILLE
+// ========================================
+
+function createBoard() {
+  boardEl.innerHTML = "";
+  boardEl.style.gridTemplateColumns = `repeat(${COLS}, minmax(0, 1fr))`;
+
+  cells = [];
+
+  for (let i = 0; i < TOTAL_CELLS; i++) {
+    const cell = document.createElement("div");
+
+    cell.className = "number-cell";
+    cell.dataset.index = String(i);
+    cell.setAttribute("role", "button");
+    cell.setAttribute("aria-label", "Case vide");
+
+    boardEl.appendChild(cell);
+    cells.push(cell);
+  }
+
+  boardEl.addEventListener("pointerdown", onPointerDown);
+  boardEl.addEventListener("pointerover", onPointerOver);
+  document.addEventListener("pointerup", onPointerUp);
+  document.addEventListener("pointercancel", cancelSelection);
+
+  // Empêche le défilement de la page pendant le glissement.
+  boardEl.style.touchAction = "none";
+}
+
+// ========================================
+// AFFICHAGE
+// ========================================
+
+function render() {
+  for (let i = 0; i < TOTAL_CELLS; i++) {
+    const cell = cells[i];
+    const value = grid[i];
+
+    cell.textContent = value ? formatNumber(value) : "";
+    cell.style.background = value
+      ? (COLORS[value] || "#e8a5ff")
+      : "rgba(255,255,255,0.07)";
+
+    cell.style.color = value ? "#ffffff" : "transparent";
+    cell.style.opacity = value ? "1" : "0.35";
+
+    cell.classList.toggle("selected", selected.includes(i));
+    cell.classList.toggle("empty", !value);
+
+    cell.setAttribute(
+      "aria-label",
+      value ? `Nombre ${value}` : "Case vide"
+    );
+  }
+
+  if (scoreEl) scoreEl.textContent = formatNumber(score);
+  if (bestEl) bestEl.textContent = formatNumber(best);
+  if (goalEl) goalEl.textContent = formatNumber(goal);
+  if (nextEl) nextEl.textContent = formatNumber(nextValue);
+
+  drawLinks();
+}
+
+// ========================================
+// TRAITS ENTRE LES NOMBRES
+// ========================================
+
+function drawLinks() {
+  if (!linksEl) return;
+
+  linksEl.innerHTML = "";
+
+  const boardRect = boardEl.getBoundingClientRect();
+
+  linksEl.setAttribute("viewBox", `0 0 ${boardRect.width} ${boardRect.height}`);
+  linksEl.setAttribute("preserveAspectRatio", "none");
+
+  for (let i = 1; i < selected.length; i++) {
+    const first = cells[selected[i - 1]].getBoundingClientRect();
+    const second = cells[selected[i]].getBoundingClientRect();
+
+    const x1 = first.left - boardRect.left + first.width / 2;
+    const y1 = first.top - boardRect.top + first.height / 2;
+    const x2 = second.left - boardRect.left + second.width / 2;
+    const y2 = second.top - boardRect.top + second.height / 2;
+
+    const line = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "line"
+    );
+
+    line.setAttribute("x1", x1);
+    line.setAttribute("y1", y1);
+    line.setAttribute("x2", x2);
+    line.setAttribute("y2", y2);
+    line.setAttribute("stroke", "#ffffff");
+    line.setAttribute("stroke-width", "5");
+    line.setAttribute("stroke-linecap", "round");
+    line.setAttribute("opacity", "0.9");
+
+    linksEl.appendChild(line);
+  }
+}
+
+// ========================================
+// SÉLECTION À LA SOURIS OU AU DOIGT
+// ========================================
+
+function getCellFromEvent(event) {
+  const element = document.elementFromPoint(event.clientX, event.clientY);
+  const cell = element && element.closest(".number-cell");
+
+  if (!cell || !boardEl.contains(cell)) return null;
+
+  const index = Number(cell.dataset.index);
+
+  if (!Number.isInteger(index)) return null;
+
+  return index;
+}
+
+function onPointerDown(event) {
+  if (gameOver) return;
+
+  const index = getCellFromEvent(event);
+
+  if (index === null || !grid[index]) return;
+
+  event.preventDefault();
+
+  isSelecting = true;
+  selected = [index];
+
+  render();
+}
+
+function onPointerOver(event) {
+  if (!isSelecting || gameOver) return;
+
+  const index = getCellFromEvent(event);
+
+  if (index === null) return;
+  if (selected.includes(index)) return;
+
+  const lastIndex = selected[selected.length - 1];
+
+  if (!areNeighbors(lastIndex, index)) return;
+
+  // Les nombres reliés doivent être identiques.
+  if (grid[index] !== grid[selected[0]]) return;
+
+  selected.push(index);
+  render();
+}
+
+function onPointerUp() {
+  if (!isSelecting) return;
+
+  isSelecting = false;
+
+  if (selected.length >= 2) {
+    mergeSelected();
+  } else {
+    selected = [];
+    render();
+  }
+}
+
+function cancelSelection() {
+  isSelecting = false;
+  selected = [];
+  render();
+}
+
+// ========================================
+// FUSION ET BONUS
+// ========================================
+
+function mergeSelected() {
+  const indices = [...selected];
+  const count = indices.length;
+  const baseValue = grid[indices[0]];
+
+  if (count < 2) {
+    selected = [];
+    render();
+    return;
+  }
+
+  // Fusion normale : valeur doublée.
+  // Bonus : si le nombre de cases est impair,
+  // la valeur est doublée une seconde fois.
+  const mergedValue = baseValue * 2 * (count % 2 === 1 ? 2 : 1);
+
+  // La case de destination est la case centrale
+  // de la sélection.
+  const destination = indices[Math.floor(count / 2)];
+
+  for (const index of indices) {
+    grid[index] = 0;
+  }
+
+  grid[destination] = mergedValue;
+
+  score += mergedValue * count;
+
+  if (mergedValue > best) {
+    best = mergedValue;
+  }
+
+  // Le record est le meilleur score atteint.
+  best = Math.max(best, score);
+  localStorage.setItem(BEST_KEY, String(best));
+
+  // L'objectif augmente lorsqu'il est atteint.
+  while (mergedValue >= goal) {
+    goal *= 2;
+  }
+
+  selected = [];
+
+  applyGravity();
+  refillBoard();
+  render();
+
+  checkGameOver();
+}
+
+// ========================================
+// GRAVITÉ
+// Les blocs descendent dans chaque colonne.
+// ========================================
+
+function applyGravity() {
+  for (let col = 0; col < COLS; col++) {
+    const values = [];
+
+    // Lire les blocs du bas vers le haut.
+    for (let row = ROWS - 1; row >= 0; row--) {
+      const value = grid[indexOf(row, col)];
+
+      if (value) values.push(value);
     }
 
-    function saveBest() {
-        if (score > best) {
-            best = score;
-            bestEl.textContent = format(best);
+    // Replacer les blocs en bas de la colonne.
+    for (let row = ROWS - 1; row >= 0; row--) {
+      const position = indexOf(row, col);
+      const valueIndex = ROWS - 1 - row;
 
-            try {
-                localStorage.setItem(BEST_KEY, String(best));
-            } catch {
-                // Le jeu fonctionne aussi sans sauvegarde.
-            }
-        }
+      grid[position] = values[valueIndex] || 0;
+    }
+  }
+}
+
+// ========================================
+// REMPLISSAGE AUTOMATIQUE
+// Les cases vides du haut sont remplies.
+// Aucun bouton n'est nécessaire.
+// ========================================
+
+function refillBoard() {
+  for (let col = 0; col < COLS; col++) {
+    for (let row = 0; row < ROWS; row++) {
+      const index = indexOf(row, col);
+
+      if (!grid[index]) {
+        grid[index] = randomValue();
+      }
+    }
+  }
+}
+
+// ========================================
+// FIN DE PARTIE
+// ========================================
+
+function hasPossibleMerge() {
+  for (let i = 0; i < TOTAL_CELLS; i++) {
+    if (!grid[i]) continue;
+
+    const row = rowOf(i);
+    const col = colOf(i);
+
+    if (col + 1 < COLS && grid[indexOf(row, col + 1)] === grid[i]) {
+      return true;
     }
 
-    /* =====================================
-       OUTILS
-    ===================================== */
-
-    function format(value) {
-        if (value >= 1000000) {
-            return (value / 1000000).toFixed(1) + " M";
-        }
-
-        if (value >= 10000) {
-            return Math.round(value / 1000) + " k";
-        }
-
-        return String(value);
+    if (row + 1 < ROWS && grid[indexOf(row + 1, col)] === grid[i]) {
+      return true;
     }
+  }
 
-    function colorFor(value) {
-        if (COLORS[value]) {
-            return COLORS[value];
-        }
-
-        const hue = (Math.log2(value) * 43) % 360;
-        return `hsl(${hue} 72% 56%)`;
-    }
-
-    function neighbors(index) {
-        const row = Math.floor(index / COLS);
-        const col = index % COLS;
-
-        return [
-            [row - 1, col],
-            [row + 1, col],
-            [row, col - 1],
-            [row, col + 1]
-        ]
-            .filter(([r, c]) =>
-                r >= 0 &&
-                r < ROWS &&
-                c >= 0 &&
-                c < COLS
-            )
-            .map(([r, c]) => r * COLS + c);
-    }
-
-    function emptyIndexes() {
-        return cells
-            .map((value, index) => value === 0 ? index : -1)
-            .filter(index => index !== -1);
-    }
-
-    /* =====================================
-       AFFICHAGE
-    ===================================== */
-
-    function render() {
-        boardEl.innerHTML = "";
-
-        cells.forEach((value, index) => {
-            const cell = document.createElement("div");
-
-            cell.className = "cell" + (
-                value === 0 ? " empty" : ""
-            );
-
-            cell.dataset.index = index;
-            cell.setAttribute("role", "gridcell");
-
-            if (value > 0) {
-                cell.textContent = format(value);
-
-                const color = colorFor(value);
-
-                cell.style.background =
-                    `linear-gradient(145deg, ${color}, ${color}bb)`;
-
-                cell.style.color =
-                    value >= 1024 ? "#231a05" : "#ffffff";
-
-                cell.style.textShadow = "0 1px 3px #0005";
-            }
-
-            if (selected.includes(index)) {
-                cell.classList.add("selected");
-            }
-
-            cell.addEventListener("pointerdown", event => {
-                startSelect(event, index);
-            });
-
-            cell.addEventListener("pointerenter", () => {
-                if (dragging) {
-                    extendSelect(index);
-                }
-            });
-
-            boardEl.appendChild(cell);
-        });
-
-        scoreEl.textContent = format(score);
-        bestEl.textContent = format(best);
-        nextEl.textContent = format(nextValue);
-        goalEl.textContent = format(goal);
-
-        const percentage = Math.min(
-            100,
-            score / goal * 100
-        );
-
-        progressEl.style.width = percentage + "%";
-
-        goalStatus.textContent =
-            score >= goal
-                ? "Objectif atteint !"
-                : "Atteins l'objectif !";
-
-        drawLinks();
-    }
-
-    /* =====================================
-       TRAITS LUMINEUX
-    ===================================== */
-
-    function drawLinks() {
-        linksEl.innerHTML = "";
-
-        if (selected.length < 2) {
-            return;
-        }
-
-        const svgRect = linksEl.getBoundingClientRect();
-
-        linksEl.setAttribute(
-            "viewBox",
-            `0 0 ${svgRect.width} ${svgRect.height}`
-        );
-
-        const points = selected.map(index => {
-            const rect = boardEl.children[index]
-                .getBoundingClientRect();
-
-            return {
-                x: rect.left + rect.width / 2 - svgRect.left,
-                y: rect.top + rect.height / 2 - svgRect.top
-            };
-        });
-
-        const line = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "polyline"
-        );
-
-        line.setAttribute(
-            "points",
-            points.map(p => `${p.x},${p.y}`).join(" ")
-        );
-
-        line.setAttribute("fill", "none");
-        line.setAttribute("stroke", "#b7f4ff");
-        line.setAttribute("stroke-width", "5");
-        line.setAttribute("stroke-linecap", "round");
-        line.setAttribute("stroke-linejoin", "round");
-
-        line.style.filter =
-            "drop-shadow(0 0 5px #5adfff)";
-
-        linksEl.appendChild(line);
-    }
-
-    /* =====================================
-       SÉLECTION DES NOMBRES
-    ===================================== */
-
-    function startSelect(event, index) {
-        if (gameOver || !cells[index]) {
-            return;
-        }
-
-        event.preventDefault();
-
-        dragging = true;
-        selected = [index];
-
-        try {
-            boardEl.setPointerCapture(event.pointerId);
-        } catch {
-            // Capture non disponible : la sélection reste utilisable.
-        }
-
-        render();
-    }
-
-    function extendSelect(index) {
-        if (
-            !dragging ||
-            selected.includes(index) ||
-            !cells[index]
-        ) {
-            return;
-        }
-
-        const last = selected[selected.length - 1];
-        const firstValue = cells[selected[0]];
-
-        if (cells[index] !== firstValue) {
-            return;
-        }
-
-        if (!neighbors(last).includes(index)) {
-            return;
-        }
-
-        selected.push(index);
-        render();
-    }
-
-    boardEl.addEventListener("pointerup", () => {
-        if (!dragging) {
-            return;
-        }
-
-        dragging = false;
-        mergeSelected();
-    });
-
-    boardEl.addEventListener("pointercancel", () => {
-        dragging = false;
-        selected = [];
-        render();
-    });
-
-    /* =====================================
-       FUSION
-    ===================================== */
-
-    function mergeSelected() {
-        if (selected.length < 2) {
-            selected = [];
-            render();
-            return;
-        }
-
-        const indexes = [...selected];
-        const value = cells[indexes[0]];
-        const mergedValue = value * 2;
-
-        // Retire les nombres utilisés.
-        indexes.forEach(index => {
-            cells[index] = 0;
-        });
-
-        // Le nouveau nombre apparaît au milieu du groupe.
-        const target = indexes[
-            Math.floor((indexes.length - 1) / 2)
-        ];
-
-        cells[target] = mergedValue;
-
-        // Plus on relie de nombres, plus le bonus est élevé.
-        const gained = mergedValue * indexes.length;
-
-        score += gained;
-        saveBest();
-
-        selected = [];
-
-        toast.textContent =
-            `${indexes.length} nombres fusionnés ! ` +
-            `${format(mergedValue)} obtenu : +${format(gained)} points.`;
-
-        // Vérifie les objectifs atteints.
-        let reachedGoal = false;
-
-        while (score >= goal) {
-            goal *= 2;
-            reachedGoal = true;
-        }
-
-        if (reachedGoal) {
-            toast.textContent +=
-                ` Nouvel objectif : ${format(goal)} !`;
-
-            toast.style.color = "#6af2d1";
-        } else {
-            toast.style.color = "";
-        }
-
-        render();
-
-        // Un nouveau nombre apparaît après la fusion.
-        clearTimeout(dropTimer);
-
-        dropTimer = setTimeout(() => {
-            if (!gameOver) {
-                dropNumber();
-            }
-        }, 180);
-    }
-
-    /* =====================================
-       APPARITION DES NOMBRES
-    ===================================== */
-
-    function dropNumber() {
-        if (gameOver || dragging) {
-            return;
-        }
-
-        const empty = emptyIndexes();
-
-        if (empty.length === 0) {
-            endGame();
-            return;
-        }
-
-        // Favorise le haut de la grille.
-        const topOpen = empty.filter(
-            index => Math.floor(index / COLS) < 3
-        );
-
-        const pool = topOpen.length > 0
-            ? topOpen
-            : empty;
-
-        const index = pool[
-            Math.floor(Math.random() * pool.length)
-        ];
-
-        cells[index] = nextValue;
-
-        toast.style.color = "";
-        toast.textContent =
-            `Un ${format(nextValue)} apparaît dans la grille.`;
-
-        // Les prochains nombres sont principalement des 2,
-        // avec quelques 4 pour varier les possibilités.
-        nextValue = Math.random() < 0.75 ? 2 : 4;
-
-        render();
-
-        // Fin de partie si la grille est pleine.
-        if (emptyIndexes().length === 0) {
-            endGame();
-        }
-    }
-
-    /* =====================================
-       FIN DE PARTIE
-    ===================================== */
-
-    function endGame() {
-        gameOver = true;
-        clearTimeout(dropTimer);
-
-        endText.textContent =
-            `Score final : ${format(score)}. ` +
-            `Record : ${format(best)}.`;
-
-        overlay.classList.add("show");
-    }
-
-    /* =====================================
-       NOUVELLE PARTIE
-    ===================================== */
-
-    function newGame() {
-        clearTimeout(dropTimer);
-
-        cells = Array(SIZE).fill(0);
-        score = 0;
-        goal = 16;
-        nextValue = 2;
-
-        selected = [];
-        dragging = false;
-        gameOver = false;
-
-        overlay.classList.remove("show");
-        toast.style.color = "";
-        toast.textContent =
-            "Nouvelle partie ! Relie les nombres identiques.";
-
-        // Quelques nombres de départ.
-        for (let i = 0; i < 5; i++) {
-            const empty = emptyIndexes();
-
-            const index = empty[
-                Math.floor(Math.random() * empty.length)
-            ];
-
-            cells[index] = Math.random() < 0.8 ? 2 : 4;
-        }
-
-        render();
-    }
-
-    /* =====================================
-       BOUTONS
-    ===================================== */
-
-    document
-        .getElementById("dropBtn")
-        .addEventListener("click", dropNumber);
-
-    document
-        .getElementById("restartBtn")
-        .addEventListener("click", () => {
-            if (confirm("Commencer une nouvelle partie ?")) {
-                newGame();
-            }
-        });
-
-    document
-        .getElementById("playAgainBtn")
-        .addEventListener("click", newGame);
-
-    document
-        .getElementById("fullscreenBtn")
-        .addEventListener("click", async () => {
-            try {
-                if (!document.fullscreenElement) {
-                    await document.documentElement.requestFullscreen();
-                } else {
-                    await document.exitFullscreen();
-                }
-            } catch {
-                toast.textContent =
-                    "Le plein écran n'est pas disponible ici.";
-            }
-        });
-
-    window.addEventListener("resize", drawLinks);
-
-    /* =====================================
-       DÉMARRAGE
-    ===================================== */
-
-    newGame();
-})();
+  return false;
+}
+
+function checkGameOver() {
+  if (hasPossibleMerge()) return;
+
+  gameOver = true;
+
+  const message = document.getElementById("gameOver");
+
+  if (message) {
+    message.hidden = false;
+  } else {
+    alert("Plus aucune fusion possible ! Clique sur Recommencer pour rejouer.");
+  }
+}
+
+// ========================================
+// NOUVELLE PARTIE
+// ========================================
+
+function newGame() {
+  score = 0;
+  goal = 16;
+  selected = [];
+  isSelecting = false;
+  gameOver = false;
+
+  const message = document.getElementById("gameOver");
+
+  if (message) message.hidden = true;
+
+  // Remplir les 40 cases dès le départ.
+  grid = Array.from(
+    { length: TOTAL_CELLS },
+    () => randomValue()
+  );
+
+  nextValue = randomValue();
+
+  render();
+}
+
+// ========================================
+// ÉVÉNEMENTS
+// ========================================
+
+if (restartBtn) {
+  restartBtn.addEventListener("click", newGame);
+}
+
+// L'ancien bouton de chute n'est plus utilisé.
+if (dropBtn) {
+  dropBtn.hidden = true;
+  dropBtn.style.display = "none";
+}
+
+window.addEventListener("resize", drawLinks);
+
+// ========================================
+// DÉMARRAGE
+// ========================================
+
+createBoard();
+newGame();
