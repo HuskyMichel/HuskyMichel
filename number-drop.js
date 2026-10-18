@@ -234,16 +234,22 @@ function addCellToSelection(index) {
     render();
 }
 
+
 function areAdjacent(a, b) {
     const rowA = Math.floor(a / COLS);
     const colA = a % COLS;
     const rowB = Math.floor(b / COLS);
     const colB = b % COLS;
 
+    // Horizontalement, verticalement ou en diagonale.
+    // Les deux cases doivent se toucher.
     return (
-        Math.abs(rowA - rowB) + Math.abs(colA - colB) === 1
+        Math.abs(rowA - rowB) <= 1 &&
+        Math.abs(colA - colB) <= 1 &&
+        (rowA !== rowB || colA !== colB)
     );
 }
+
 
 // ========================================
 // LIGNE ENTRE LES BLOCS SÉLECTIONNÉS
@@ -335,7 +341,7 @@ async function mergeSelected() {
             : `${count} blocs fusionnés !`
     );
 
-    await sleep(320);
+    await sleep(450);
 
     // Les blocs explosés disparaissent. Le dernier reste et évolue.
     for (const index of indices) {
@@ -472,21 +478,30 @@ async function animateGravityAndRefill() {
         const dx = Number(tile.dataset.dx);
         const dy = Number(tile.dataset.dy);
 
-        animations.push(
-            tile.animate(
-                [
-                    { transform: "translate(0px, 0px) scale(1)" },
-                    {
-                        transform: `translate(${dx}px, ${dy}px) scale(1)`
-                    }
-                ],
-                {
-                    duration: tile.dataset.spawn === "true" ? 440 : 360,
-                    easing: "cubic-bezier(0.22, 0.75, 0.25, 1)",
-                    fill: "forwards"
-                }
-            ).finished.catch(() => {})
-        );
+        const targetIndex = Number(tile.dataset.to);
+const targetRow = Math.floor(targetIndex / COLS);
+const targetCol = targetIndex % COLS;
+
+const delay = tile.dataset.spawn === "true"
+    ? targetCol * 45 + targetRow * 25
+    : 0;
+
+animations.push(
+    tile.animate(
+        [
+            { transform: "translate(0px, 0px) scale(1)" },
+            {
+                transform: `translate(${dx}px, ${dy}px) scale(1)`
+            }
+        ],
+        {
+            duration: tile.dataset.spawn === "true" ? 1000 : 850,
+            delay,
+            easing: "cubic-bezier(0.22, 0.75, 0.25, 1)",
+            fill: "forwards"
+        }
+    ).finished.catch(() => {})
+);
     }
 
     await Promise.all(animations);
@@ -534,6 +549,8 @@ function createMovingTile(value, fromIndex, toIndex, spawn, layer) {
     tile.className = "moving-tile";
     tile.textContent = String(value);
     tile.dataset.spawn = String(spawn);
+	tile.dataset.to = String(toIndex);
+tile.dataset.value = String(value);
     tile.dataset.dx = String(targetX - startX);
     tile.dataset.dy = String(targetY - startY);
 
@@ -546,8 +563,6 @@ function createMovingTile(value, fromIndex, toIndex, spawn, layer) {
     const sourceCell = cells[spawn ? toIndex : fromIndex];
     const computed = window.getComputedStyle(sourceCell);
 
-    tile.style.background = computed.background;
-    tile.style.border = computed.border;
     tile.style.borderRadius = computed.borderRadius;
     tile.style.color = computed.color;
     tile.style.fontSize = computed.fontSize;

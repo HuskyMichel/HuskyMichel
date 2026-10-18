@@ -646,3 +646,78 @@ button {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ========================================
+   COULEURS DES NOMBRES
+   ======================================== */
+
+/* 2 : bleu */
+.board .cell[data-value="2"],
+.moving-tile[data-value="2"] {
+    background: linear-gradient(145deg, #54b6ff, #2470e8) !important;
+    border-color: #9bddff !important;
+    color: #ffffff;
+}
+
+/* 4 : vert */
+.board .cell[data-value="4"],
+.moving-tile[data-value="4"] {
+    background: linear-gradient(145deg, #53e6a1, #15965d) !important;
+    border-color: #a4ffd1 !important;
+    color: #ffffff;
+}
+
+/* 8 : jaune */
+.board .cell[data-value="8"],
+.moving-tile[data-value="8"] {
+    background: linear-gradient(145deg, #ffe66b, #e8a51e) !important;
+    border-color: #fff2a7 !important;
+    color: #ffffff;
+}
+
+/* 16 : orange */
+.board .cell[data-value="16"],
+.moving-tile[data-value="16"] {
+    background: linear-gradient(145deg, #ffad55, #e65a25) !important;
+    border-color: #ffd0a0 !important;
+    color: #ffffff;
+}
+
+/* 32 : rouge */
+.board .cell[data-value="32"],
+.moving-tile[data-value="32"] {
+    background: linear-gradient(145deg, #ff6f80, #cf294e) !important;
+    border-color: #ffb0bb !important;
+    color: #ffffff;
+}
+
+/* 64 : violet */
+.board .cell[data-value="64"],
+.moving-tile[data-value="64"] {
+    background: linear-gradient(145deg, #c08aff, #7739d4) !important;
+    border-color: #e0c0ff !important;
+    color: #ffffff;
+}
+
+/* 128 : turquoise */
+.board .cell[data-value="128"],
+.moving-tile[data-value="128"] {
+    background: linear-gradient(145deg, #50e8e1, #168eac) !important;
+    border-color: #a5fffa !important;
+    color: #ffffff;
+}
+
+/* Valeurs supérieures */
+.board .cell[data-value="256"],
+.moving-tile[data-value="256"] {
+    background: linear-gradient(145deg, #ff85d4, #bd3d91) !important;
+    border-color: #ffc4e9 !important;
+    color: #ffffff;
+}
+
+.board .cell[data-value="512"],
+.moving-tile[data-value="512"] {
+    background: linear-gradient(145deg, #f7f7ff, #aab6d9) !important;
+    border-color: #ffffff !important;
+    color: #20243a;
+}
