@@ -3,132 +3,106 @@
 
 // ========================================
 // NUMBER DROP — HUSKYMICHEL
-// Grille 5 x 8, fusions, gravité et thèmes
 // ========================================
 
 const COLS = 5;
 const ROWS = 8;
-const TOTAL_CELLS = COLS * ROWS;
+const CELL_COUNT = COLS * ROWS;
 
 const BEST_KEY = "hm_numberdrop_best_v1";
 const THEME_KEY = "hm_numberdrop_theme_v1";
 
-const boardEl = document.getElementById("board");
-const linksEl = document.getElementById("links");
+const board = document.getElementById("board");
+const boardWrap = document.querySelector(".board-wrap");
+const links = document.getElementById("links");
 
-const scoreEl = document.getElementById("score");
-const bestEl = document.getElementById("best");
-const goalEl = document.getElementById("goal");
-const nextEl = document.getElementById("next");
-const goalStatusEl = document.getElementById("goalStatus");
-const progressEl = document.getElementById("progress");
-const toastEl = document.getElementById("toast");
+const scoreElement = document.getElementById("score");
+const bestElement = document.getElementById("best");
+const nextElement = document.getElementById("next");
+const goalElement = document.getElementById("goal");
+const goalStatus = document.getElementById("goalStatus");
+const progressElement = document.getElementById("progress");
+const toast = document.getElementById("toast");
 
 const restartBtn = document.getElementById("restartBtn");
-const playAgainBtn = document.getElementById("playAgainBtn");
 const fullscreenBtn = document.getElementById("fullscreenBtn");
+const playAgainBtn = document.getElementById("playAgainBtn");
+const overlay = document.getElementById("overlay");
+const endText = document.getElementById("endText");
 const themeSelect = document.getElementById("themeSelect");
-const overlayEl = document.getElementById("overlay");
-const endTextEl = document.getElementById("endText");
 
-const COLORS = {
-    2: "#57b8ff",
-    4: "#6385ff",
-    8: "#9568ff",
-    16: "#c566ff",
-    32: "#ff65bd",
-    64: "#ff7565",
-    128: "#ffad55",
-    256: "#f2d65c",
-    512: "#65dba0",
-    1024: "#42d9d0",
-    2048: "#f5f5ff"
-};
+const sleep = (ms) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
 
 let grid = [];
 let cells = [];
+let selected = [];
 let score = 0;
 let best = Number(localStorage.getItem(BEST_KEY)) || 0;
 let goal = 16;
 let nextValue = 2;
-let selected = [];
-let isSelecting = false;
+let isAnimating = false;
 let gameOver = false;
-let lastMergedValue = 0;
+let pointerIsDown = false;
 
 // ========================================
-// OUTILS
+// INITIALISATION DE LA GRILLE
 // ========================================
 
 function randomValue() {
+    // Les petits nombres sont plus fréquents.
+    const roll = Math.random();
+
+    if (roll < 0.68) return 2;
+    if (roll < 0.94) return 4;
+    return 8;
+}
+
+function randomNextValue() {
     return Math.random() < 0.75 ? 2 : 4;
 }
 
-function rowOf(index) {
-    return Math.floor(index / COLS);
-}
+function newGame() {
+    grid = Array(CELL_COUNT).fill(0);
+    selected = [];
+    score = 0;
+    goal = 16;
+    nextValue = randomNextValue();
+    isAnimating = false;
+    pointerIsDown = false;
+    gameOver = false;
 
-function colOf(index) {
-    return index % COLS;
-}
+    overlay.hidden = true;
+    board.classList.remove("animating");
+    clearMovingTiles();
+    createCells();
 
-function indexOf(row, col) {
-    return row * COLS + col;
-}
-
-function areNeighbors(a, b) {
-    return Math.abs(rowOf(a) - rowOf(b)) +
-           Math.abs(colOf(a) - colOf(b)) === 1;
-}
-
-function formatNumber(value) {
-    if (value >= 1_000_000) {
-        return (value / 1_000_000).toFixed(1).replace(".0", "") + "M";
+    // Toutes les cases sont remplies dès le début.
+    for (let i = 0; i < CELL_COUNT; i++) {
+        grid[i] = randomValue();
     }
 
-    if (value >= 1_000) {
-        return (value / 1_000).toFixed(1).replace(".0", "") + "K";
-    }
-
-    return String(value);
+    updateStats();
+    render();
+    setToast("Relie les nombres identiques !");
+    checkGameOver();
 }
 
-function showToast(message) {
-    if (toastEl) toastEl.textContent = message;
-}
-
-// ========================================
-// CRÉATION DE LA GRILLE
-// ========================================
-
-function createBoard() {
-    boardEl.innerHTML = "";
-    boardEl.style.gridTemplateColumns = `repeat(${COLS}, minmax(0, 1fr))`;
-    boardEl.style.gridTemplateRows = `repeat(${ROWS}, minmax(0, 1fr))`;
-
+function createCells() {
+    board.innerHTML = "";
     cells = [];
 
-    for (let i = 0; i < TOTAL_CELLS; i++) {
+    for (let i = 0; i < CELL_COUNT; i++) {
         const cell = document.createElement("div");
 
-        // IMPORTANT : cette classe correspond au CSS.
         cell.className = "cell";
         cell.dataset.index = String(i);
         cell.setAttribute("role", "gridcell");
+        cell.addEventListener("pointerdown", onCellPointerDown);
 
-        boardEl.appendChild(cell);
+        board.appendChild(cell);
         cells.push(cell);
     }
-
-    // On suit le pointeur sur le document pour éviter que
-    // le déplacement soit interrompu pendant la sélection.
-    boardEl.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("pointermove", onPointerMove);
-    document.addEventListener("pointerup", onPointerUp);
-    document.addEventListener("pointercancel", cancelSelection);
-
-    boardEl.addEventListener("contextmenu", event => event.preventDefault());
-    boardEl.style.touchAction = "none";
 }
 
 // ========================================
@@ -136,264 +110,456 @@ function createBoard() {
 // ========================================
 
 function render() {
-    for (let i = 0; i < TOTAL_CELLS; i++) {
+    for (let i = 0; i < CELL_COUNT; i++) {
         const cell = cells[i];
         const value = grid[i];
 
-        cell.textContent = value ? formatNumber(value) : "";
-        cell.style.background = value
-            ? (COLORS[value] || "#e8a5ff")
-            : "var(--cell)";
+        cell.classList.remove(
+            "selected",
+            "explode",
+            "merging-result"
+        );
 
-        cell.style.color = "#ffffff";
-        cell.classList.toggle("selected", selected.includes(i));
-        cell.classList.toggle("empty", !value);
+        cell.textContent = value ? String(value) : "";
 
+        cell.dataset.value = String(value);
         cell.setAttribute(
             "aria-label",
             value ? `Nombre ${value}` : "Case vide"
         );
-    }
 
-    if (scoreEl) scoreEl.textContent = formatNumber(score);
-    if (bestEl) bestEl.textContent = formatNumber(best);
-    if (goalEl) goalEl.textContent = formatNumber(goal);
-    if (nextEl) nextEl.textContent = formatNumber(nextValue);
-
-    if (progressEl) {
-        const progress = Math.min(100, (lastMergedValue / goal) * 100);
-        progressEl.style.width = `${progress}%`;
+        if (selected.includes(i)) {
+            cell.classList.add("selected");
+        }
     }
 
     drawLinks();
+    updateStats();
+}
+
+function updateStats() {
+    scoreElement.textContent = score.toLocaleString("fr-FR");
+    bestElement.textContent = best.toLocaleString("fr-FR");
+    nextElement.textContent = nextValue;
+    goalElement.textContent = goal.toLocaleString("fr-FR");
+
+    const largest = Math.max(0, ...grid);
+    const percentage = Math.min(100, (largest / goal) * 100);
+
+    progressElement.style.width = `${percentage}%`;
+}
+
+function setToast(message) {
+    toast.textContent = message;
 }
 
 // ========================================
-// TRAITS DE LIAISON
+// SÉLECTION DES BLOCS
 // ========================================
 
-function drawLinks() {
-    if (!linksEl || !boardEl) return;
+function onCellPointerDown(event) {
+    if (isAnimating || gameOver || event.button > 0) return;
 
-    linksEl.innerHTML = "";
+    const index = Number(event.currentTarget.dataset.index);
 
-    const boardRect = boardEl.getBoundingClientRect();
-
-    if (!boardRect.width || !boardRect.height) return;
-
-    linksEl.setAttribute(
-        "viewBox",
-        `0 0 ${boardRect.width} ${boardRect.height}`
-    );
-    linksEl.setAttribute("preserveAspectRatio", "none");
-
-    for (let i = 1; i < selected.length; i++) {
-        const first = cells[selected[i - 1]].getBoundingClientRect();
-        const second = cells[selected[i]].getBoundingClientRect();
-
-        const line = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "line"
-        );
-
-        line.setAttribute("x1", first.left - boardRect.left + first.width / 2);
-        line.setAttribute("y1", first.top - boardRect.top + first.height / 2);
-        line.setAttribute("x2", second.left - boardRect.left + second.width / 2);
-        line.setAttribute("y2", second.top - boardRect.top + second.height / 2);
-        line.setAttribute("stroke", "#ffffff");
-        line.setAttribute("stroke-width", "5");
-        line.setAttribute("stroke-linecap", "round");
-        line.setAttribute("opacity", "0.95");
-
-        linksEl.appendChild(line);
-    }
-}
-
-// ========================================
-// SÉLECTION À LA SOURIS OU AU DOIGT
-// ========================================
-
-function getCellFromPoint(x, y) {
-    const element = document.elementFromPoint(x, y);
-    const cell = element && element.closest(".cell");
-
-    if (!cell || !boardEl.contains(cell)) return null;
-
-    const index = Number(cell.dataset.index);
-
-    return Number.isInteger(index) ? index : null;
-}
-
-function onPointerDown(event) {
-    if (gameOver || event.button === 2) return;
-
-    const index = getCellFromPoint(event.clientX, event.clientY);
-
-    if (index === null || !grid[index]) return;
+    if (!grid[index]) return;
 
     event.preventDefault();
 
-    isSelecting = true;
+    pointerIsDown = true;
     selected = [index];
 
-    showToast("Continue à relier les nombres identiques.");
+    try {
+        board.setPointerCapture(event.pointerId);
+    } catch (_) {
+        // Le navigateur peut refuser la capture.
+    }
+
     render();
+    setToast("Continue à relier les nombres identiques !");
 }
 
-function onPointerMove(event) {
-    if (!isSelecting || gameOver) return;
+document.addEventListener("pointermove", (event) => {
+    if (!pointerIsDown || isAnimating || gameOver) return;
 
-    const index = getCellFromPoint(event.clientX, event.clientY);
+    const element = document.elementFromPoint(
+        event.clientX,
+        event.clientY
+    );
 
-    if (index === null || selected.includes(index)) return;
+    const cell = element?.closest(".cell");
+
+    if (!cell || !board.contains(cell)) return;
+
+    const index = Number(cell.dataset.index);
+    addCellToSelection(index);
+});
+
+document.addEventListener("pointerup", async () => {
+    if (!pointerIsDown) return;
+
+    pointerIsDown = false;
+
+    if (selected.length >= 2) {
+        await mergeSelected();
+    } else {
+        selected = [];
+        render();
+        setToast("Relie au moins deux nombres identiques.");
+    }
+});
+
+function addCellToSelection(index) {
+    if (selected.includes(index)) {
+        // Permet de revenir au bloc précédent en retraçant le chemin.
+        if (
+            selected.length >= 2 &&
+            selected[selected.length - 2] === index
+        ) {
+            selected.pop();
+            render();
+        }
+        return;
+    }
 
     const lastIndex = selected[selected.length - 1];
+    if (lastIndex === undefined) return;
 
-    // On ne peut relier que des cases voisines.
-    if (!areNeighbors(lastIndex, index)) return;
+    const firstValue = grid[selected[0]];
 
-    // Tous les nombres sélectionnés doivent être identiques.
-    if (grid[index] !== grid[selected[0]]) return;
+    if (grid[index] !== firstValue) return;
+    if (!areAdjacent(lastIndex, index)) return;
 
     selected.push(index);
     render();
 }
 
-function onPointerUp() {
-    if (!isSelecting) return;
+function areAdjacent(a, b) {
+    const rowA = Math.floor(a / COLS);
+    const colA = a % COLS;
+    const rowB = Math.floor(b / COLS);
+    const colB = b % COLS;
 
-    isSelecting = false;
-
-    if (selected.length >= 2) {
-        mergeSelected();
-    } else {
-        selected = [];
-        render();
-        showToast("Relie au moins deux nombres identiques.");
-    }
-}
-
-function cancelSelection() {
-    if (!isSelecting) return;
-
-    isSelecting = false;
-    selected = [];
-    render();
+    return (
+        Math.abs(rowA - rowB) + Math.abs(colA - colB) === 1
+    );
 }
 
 // ========================================
-// FUSION ET BONUS IMPAIR
+// LIGNE ENTRE LES BLOCS SÉLECTIONNÉS
 // ========================================
 
-function mergeSelected() {
+function drawLinks() {
+    if (!links || !boardWrap) return;
+
+    const wrapRect = boardWrap.getBoundingClientRect();
+
+    links.setAttribute("width", wrapRect.width);
+    links.setAttribute("height", wrapRect.height);
+    links.setAttribute(
+        "viewBox",
+        `0 0 ${wrapRect.width} ${wrapRect.height}`
+    );
+
+    links.innerHTML = "";
+
+    if (selected.length < 2) return;
+
+    const points = selected.map((index) => {
+        const rect = cells[index].getBoundingClientRect();
+
+        return {
+            x: rect.left - wrapRect.left + rect.width / 2,
+            y: rect.top - wrapRect.top + rect.height / 2
+        };
+    });
+
+    const line = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "polyline"
+    );
+
+    line.setAttribute(
+        "points",
+        points.map((point) => `${point.x},${point.y}`).join(" ")
+    );
+    line.setAttribute("class", "selection-line");
+
+    links.appendChild(line);
+}
+
+window.addEventListener("resize", drawLinks);
+
+// ========================================
+// FUSION ET EXPLOSION
+// ========================================
+
+async function mergeSelected() {
+    if (isAnimating || selected.length < 2) return;
+
     const indices = [...selected];
     const count = indices.length;
     const baseValue = grid[indices[0]];
 
-    if (count < 2) {
+    if (!indices.every((index) => grid[index] === baseValue)) {
         selected = [];
         render();
         return;
     }
 
-    // Fusion normale : valeur x 2.
-    // Bonus impair : valeur x 4 au total.
+    isAnimating = true;
+    pointerIsDown = false;
+
+    // Le dernier bloc relié reste comme destination de la fusion.
+    const destination = indices[count - 1];
+
+    // Bonus demandé : nombre impair de blocs = x8 ; sinon = x2.
     const hasBonus = count % 2 === 1;
     const mergedValue = baseValue * (hasBonus ? 8 : 2);
 
-    // Choisir une case centrale pour recevoir le résultat.
-    const destination = indices[Math.floor(count / 2)];
+    // Animation d'explosion sur tous les blocs sauf la destination.
+    selected = indices;
+    drawLinks();
 
     for (const index of indices) {
-        grid[index] = 0;
+        if (index !== destination) {
+            cells[index].classList.add("explode");
+        } else {
+            cells[index].classList.add("merging-result");
+        }
+    }
+
+    setToast(
+        hasBonus
+            ? `BONUS ! ${count} blocs reliés !`
+            : `${count} blocs fusionnés !`
+    );
+
+    await sleep(320);
+
+    // Les blocs explosés disparaissent. Le dernier reste et évolue.
+    for (const index of indices) {
+        if (index !== destination) {
+            grid[index] = 0;
+        }
     }
 
     grid[destination] = mergedValue;
-
-    score += mergedValue * count;
-    best = Math.max(best, score);
-    localStorage.setItem(BEST_KEY, String(best));
-
-    lastMergedValue = mergedValue;
-
-    if (hasBonus) {
-        showToast(`✨ Bonus ! ${count} blocs fusionnent en ${formatNumber(mergedValue)} !`);
-    } else {
-        showToast(`${count} blocs fusionnent en ${formatNumber(mergedValue)}.`);
-    }
-
-    // L'objectif double quand le nombre obtenu atteint l'objectif.
-    while (mergedValue >= goal) {
-        goal *= 2;
-        showToast(`🎯 Objectif atteint ! Le prochain objectif est ${formatNumber(goal)}.`);
-    }
-
     selected = [];
 
-    // D'abord, les blocs restants descendent.
-    applyGravity();
+    score += mergedValue * count;
 
-    // Ensuite, les trous du haut sont remplis automatiquement.
-    refillBoard();
+    if (score > best) {
+        best = score;
+        localStorage.setItem(BEST_KEY, String(best));
+    }
 
-    render();
+    // Si l'objectif est atteint, il double.
+    if (mergedValue >= goal) {
+        goal *= 2;
+        goalStatus.textContent = "Objectif atteint !";
+        setToast(`Objectif atteint ! Le prochain est ${goal}.`);
+    } else {
+        goalStatus.textContent = "Continue !";
+    }
+
+    updateStats();
+
+    // Les blocs tombent, puis de nouveaux arrivent du haut.
+    await animateGravityAndRefill();
+
+    isAnimating = false;
+
+    setToast("À toi de jouer !");
     checkGameOver();
 }
 
 // ========================================
-// GRAVITÉ : LES BLOCS DESCENDENT
+// CHUTE VISIBLE DES BLOCS
 // ========================================
 
-function applyGravity() {
-    for (let col = 0; col < COLS; col++) {
-        const values = [];
+async function animateGravityAndRefill() {
+    const before = [...grid];
+    const finalGrid = Array(CELL_COUNT).fill(0);
+    const movements = [];
+    const spawned = [];
 
-        // Récupérer les nombres de bas en haut.
+    // Pour chaque colonne, les blocs existants descendent.
+    for (let col = 0; col < COLS; col++) {
+        const existing = [];
+
+        // On parcourt du bas vers le haut.
         for (let row = ROWS - 1; row >= 0; row--) {
-            const value = grid[indexOf(row, col)];
+            const index = row * COLS + col;
 
-            if (value !== 0) values.push(value);
-        }
-
-        // Nettoyer la colonne, puis replacer les blocs en bas.
-        for (let row = 0; row < ROWS; row++) {
-            grid[indexOf(row, col)] = 0;
-        }
-
-        for (let i = 0; i < values.length; i++) {
-            const row = ROWS - 1 - i;
-            grid[indexOf(row, col)] = values[i];
-        }
-    }
-}
-
-// ========================================
-// REMPLISSAGE AUTOMATIQUE DES CASES VIDES
-// ========================================
-
-function refillBoard() {
-    let nextUsed = false;
-
-    // Les cases vides sont au-dessus des blocs après la gravité.
-    for (let col = 0; col < COLS; col++) {
-        for (let row = 0; row < ROWS; row++) {
-            const index = indexOf(row, col);
-
-            if (grid[index] === 0) {
-                if (!nextUsed) {
-                    grid[index] = nextValue;
-                    nextValue = randomValue();
-                    nextUsed = true;
-                } else {
-                    grid[index] = randomValue();
-                }
+            if (before[index] !== 0) {
+                existing.push({
+                    value: before[index],
+                    from: index
+                });
             }
         }
+
+        // Ils se replacent en partant du bas.
+        let targetRow = ROWS - 1;
+
+        for (const tile of existing) {
+            const to = targetRow * COLS + col;
+
+            finalGrid[to] = tile.value;
+
+            movements.push({
+                value: tile.value,
+                from: tile.from,
+                to
+            });
+
+            targetRow--;
+        }
+
+        // Les cases restantes sont remplies par des blocs venant du haut.
+        while (targetRow >= 0) {
+            const value = nextValue || randomValue();
+
+            finalGrid[targetRow * COLS + col] = value;
+
+            spawned.push({
+                value,
+                to: targetRow * COLS + col
+            });
+
+            nextValue = randomNextValue();
+            targetRow--;
+        }
     }
 
-    if (!nextUsed) {
-        nextValue = randomValue();
+    // Crée une couche visuelle au-dessus de la grille.
+    const layer = getMovingLayer();
+
+    // Les blocs existants sont copiés à leur position de départ.
+    for (const movement of movements) {
+        createMovingTile(
+            movement.value,
+            movement.from,
+            movement.to,
+            false,
+            layer
+        );
     }
+
+    // Les nouveaux blocs commencent au-dessus de la grille.
+    for (const tile of spawned) {
+        createMovingTile(
+            tile.value,
+            tile.to,
+            tile.to,
+            true,
+            layer
+        );
+    }
+
+    // Met à jour la vraie grille sans montrer les changements instantanés.
+    grid = finalGrid;
+    board.classList.add("animating");
+    render();
+
+    // Force le navigateur à appliquer la nouvelle mise en page.
+    board.getBoundingClientRect();
+
+    const animations = [];
+
+    for (const tile of layer.querySelectorAll(".moving-tile")) {
+        const dx = Number(tile.dataset.dx);
+        const dy = Number(tile.dataset.dy);
+
+        animations.push(
+            tile.animate(
+                [
+                    { transform: "translate(0px, 0px) scale(1)" },
+                    {
+                        transform: `translate(${dx}px, ${dy}px) scale(1)`
+                    }
+                ],
+                {
+                    duration: tile.dataset.spawn === "true" ? 440 : 360,
+                    easing: "cubic-bezier(0.22, 0.75, 0.25, 1)",
+                    fill: "forwards"
+                }
+            ).finished.catch(() => {})
+        );
+    }
+
+    await Promise.all(animations);
+
+    clearMovingTiles();
+    board.classList.remove("animating");
+
+    render();
+}
+
+function getMovingLayer() {
+    let layer = boardWrap.querySelector(".falling-layer");
+
+    if (!layer) {
+        layer = document.createElement("div");
+        layer.className = "falling-layer";
+        boardWrap.appendChild(layer);
+    }
+
+    layer.innerHTML = "";
+    return layer;
+}
+
+function createMovingTile(value, fromIndex, toIndex, spawn, layer) {
+    const targetRect = cells[toIndex].getBoundingClientRect();
+    const wrapRect = boardWrap.getBoundingClientRect();
+
+    let startX;
+    let startY;
+
+    if (spawn) {
+        startX = targetRect.left - wrapRect.left;
+        startY = targetRect.top - wrapRect.top - targetRect.height - 10;
+    } else {
+        const sourceRect = cells[fromIndex].getBoundingClientRect();
+
+        startX = sourceRect.left - wrapRect.left;
+        startY = sourceRect.top - wrapRect.top;
+    }
+
+    const targetX = targetRect.left - wrapRect.left;
+    const targetY = targetRect.top - wrapRect.top;
+
+    const tile = document.createElement("div");
+    tile.className = "moving-tile";
+    tile.textContent = String(value);
+    tile.dataset.spawn = String(spawn);
+    tile.dataset.dx = String(targetX - startX);
+    tile.dataset.dy = String(targetY - startY);
+
+    tile.style.left = `${startX}px`;
+    tile.style.top = `${startY}px`;
+    tile.style.width = `${targetRect.width}px`;
+    tile.style.height = `${targetRect.height}px`;
+
+    // Reprend l'apparence du bloc d'origine.
+    const sourceCell = cells[spawn ? toIndex : fromIndex];
+    const computed = window.getComputedStyle(sourceCell);
+
+    tile.style.background = computed.background;
+    tile.style.border = computed.border;
+    tile.style.borderRadius = computed.borderRadius;
+    tile.style.color = computed.color;
+    tile.style.fontSize = computed.fontSize;
+    tile.style.fontWeight = computed.fontWeight;
+
+    layer.appendChild(tile);
+}
+
+function clearMovingTiles() {
+    const layer = boardWrap?.querySelector(".falling-layer");
+
+    if (layer) layer.innerHTML = "";
 }
 
 // ========================================
@@ -401,24 +567,20 @@ function refillBoard() {
 // ========================================
 
 function hasPossibleMerge() {
-    for (let i = 0; i < TOTAL_CELLS; i++) {
-        if (!grid[i]) continue;
+    for (let row = 0; row < ROWS; row++) {
+        for (let col = 0; col < COLS; col++) {
+            const index = row * COLS + col;
+            const value = grid[index];
 
-        const row = rowOf(i);
-        const col = colOf(i);
+            if (!value) return true;
 
-        if (
-            col + 1 < COLS &&
-            grid[indexOf(row, col + 1)] === grid[i]
-        ) {
-            return true;
-        }
+            if (col < COLS - 1 && grid[index + 1] === value) {
+                return true;
+            }
 
-        if (
-            row + 1 < ROWS &&
-            grid[indexOf(row + 1, col)] === grid[i]
-        ) {
-            return true;
+            if (row < ROWS - 1 && grid[index + COLS] === value) {
+                return true;
+            }
         }
     }
 
@@ -426,58 +588,62 @@ function hasPossibleMerge() {
 }
 
 function checkGameOver() {
-    if (hasPossibleMerge()) return;
+    if (isAnimating || hasPossibleMerge()) return;
 
     gameOver = true;
-
-    if (endTextEl) {
-        endTextEl.textContent =
-            `Score final : ${formatNumber(score)}. Il n'y a plus de fusion possible.`;
-    }
-
-    if (overlayEl) overlayEl.hidden = false;
+    endText.textContent =
+        `Score final : ${score.toLocaleString("fr-FR")}. ` +
+        "Il n'y a plus de nombres identiques côte à côte.";
+    overlay.hidden = false;
 }
 
 // ========================================
 // THÈMES
 // ========================================
 
-function setTheme(theme) {
+function applyTheme(theme) {
     const allowedThemes = ["blue", "purple", "green", "orange"];
 
-    if (!allowedThemes.includes(theme)) theme = "blue";
+    if (!allowedThemes.includes(theme)) {
+        theme = "blue";
+    }
 
     document.body.dataset.theme = theme;
     localStorage.setItem(THEME_KEY, theme);
 
-    if (themeSelect) themeSelect.value = theme;
+    if (themeSelect) {
+        themeSelect.value = theme;
+    }
 }
+
+applyTheme(localStorage.getItem(THEME_KEY) || "blue");
 
 if (themeSelect) {
     themeSelect.addEventListener("change", () => {
-        setTheme(themeSelect.value);
+        applyTheme(themeSelect.value);
     });
 }
 
 // ========================================
-// PLEIN ÉCRAN
+// BOUTONS
 // ========================================
 
-if (fullscreenBtn) {
-    fullscreenBtn.addEventListener("click", async () => {
-        try {
-            if (!document.fullscreenElement) {
-                await document.documentElement.requestFullscreen();
-                fullscreenBtn.textContent = "⛶ Réduire";
-            } else {
-                await document.exitFullscreen();
-                fullscreenBtn.textContent = "⛶ Agrandir";
-            }
-        } catch (error) {
-            showToast("Le plein écran n'est pas disponible dans ce navigateur.");
+restartBtn?.addEventListener("click", newGame);
+playAgainBtn?.addEventListener("click", newGame);
+
+fullscreenBtn?.addEventListener("click", async () => {
+    try {
+        if (!document.fullscreenElement) {
+            await document.documentElement.requestFullscreen();
+            fullscreenBtn.textContent = "⛶ Réduire";
+        } else {
+            await document.exitFullscreen();
+            fullscreenBtn.textContent = "⛶ Agrandir";
         }
-    });
-}
+    } catch (_) {
+        setToast("Le plein écran n'est pas disponible dans ce navigateur.");
+    }
+});
 
 document.addEventListener("fullscreenchange", () => {
     if (fullscreenBtn) {
@@ -490,37 +656,7 @@ document.addEventListener("fullscreenchange", () => {
 });
 
 // ========================================
-// NOUVELLE PARTIE
+// LANCEMENT
 // ========================================
 
-function newGame() {
-    score = 0;
-    goal = 16;
-    selected = [];
-    isSelecting = false;
-    gameOver = false;
-    lastMergedValue = 0;
-
-    if (overlayEl) overlayEl.hidden = true;
-
-    // Les 40 cases sont remplies au démarrage.
-    grid = Array.from({ length: TOTAL_CELLS }, randomValue);
-    nextValue = randomValue();
-
-    showToast("Maintiens le clic et relie les nombres identiques !");
-    render();
-    checkGameOver();
-}
-
-if (restartBtn) restartBtn.addEventListener("click", newGame);
-if (playAgainBtn) playAgainBtn.addEventListener("click", newGame);
-
-window.addEventListener("resize", drawLinks);
-
-// ========================================
-// DÉMARRAGE
-// ========================================
-
-setTheme(localStorage.getItem(THEME_KEY) || "blue");
-createBoard();
 newGame();
