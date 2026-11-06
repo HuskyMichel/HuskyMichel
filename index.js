@@ -149,6 +149,91 @@ const recherche =
 const resultatsRecherche =
     document.getElementById("resultatsRecherche");
 
+const filtreCategorie =
+    document.getElementById("filtreCategorie");
+
+const aucunProfilFiltre =
+    document.getElementById("aucunProfilFiltre");
+
+/* =========================================================
+   FILTRES DES PROFILS
+========================================================= */
+
+function appliquerFiltresProfils() {
+    if (!listeProfils) return;
+
+    const categorieChoisie = filtreCategorie?.value || "";
+    const texteRecherche = (recherche?.value || "").trim().toLocaleLowerCase("fr");
+    const cartes = listeProfils.querySelectorAll(".carteProfil");
+    let visibles = 0;
+
+    cartes.forEach((carte) => {
+        let categories = [];
+        try {
+            categories = JSON.parse(carte.dataset.categories || "[]");
+        } catch (error) {
+            categories = [];
+        }
+
+        const correspondCategorie = !categorieChoisie ||
+            categories.some((categorie) =>
+                String(categorie).toLocaleLowerCase("fr") === categorieChoisie.toLocaleLowerCase("fr")
+            );
+        const pseudo = (carte.dataset.pseudo || "").toLocaleLowerCase("fr");
+        const correspondRecherche = !texteRecherche || pseudo.includes(texteRecherche);
+        const afficher = correspondCategorie && correspondRecherche;
+
+        carte.hidden = !afficher;
+        if (afficher) visibles++;
+    });
+
+    if (aucunProfilFiltre) {
+        aucunProfilFiltre.hidden = cartes.length === 0 || visibles > 0;
+    }
+}
+
+function actualiserCategoriesDisponibles() {
+    if (!filtreCategorie || !listeProfils) return;
+
+    const categorieActuelle = filtreCategorie.value;
+    const categories = new Map();
+
+    listeProfils.querySelectorAll(".carteProfil").forEach((carte) => {
+        let profilCategories = [];
+        try {
+            profilCategories = JSON.parse(carte.dataset.categories || "[]");
+        } catch (error) {
+            profilCategories = [];
+        }
+
+        profilCategories.forEach((categorie) => {
+            const nom = String(categorie || "").trim();
+            if (nom) categories.set(nom.toLocaleLowerCase("fr"), nom);
+        });
+    });
+
+    filtreCategorie.replaceChildren();
+    const toutes = document.createElement("option");
+    toutes.value = "";
+    toutes.textContent = "Toutes les catégories";
+    filtreCategorie.appendChild(toutes);
+
+    [...categories.values()].sort((a, b) => a.localeCompare(b, "fr")).forEach((categorie) => {
+        const option = document.createElement("option");
+        option.value = categorie;
+        option.textContent = categorie;
+        filtreCategorie.appendChild(option);
+    });
+
+    if ([...filtreCategorie.options].some((option) => option.value === categorieActuelle)) {
+        filtreCategorie.value = categorieActuelle;
+    }
+}
+
+if (filtreCategorie) {
+    filtreCategorie.addEventListener("change", appliquerFiltresProfils);
+}
+
 
 /* =========================================================
    UTILISATEUR ACTUEL
@@ -1386,6 +1471,9 @@ async function chargerProfils(){
                     ? data.categories
                     : [];
 
+                carte.dataset.categories = JSON.stringify(categories);
+                carte.dataset.pseudo = pseudo;
+
 
                 const troisCategories =
                     categories.slice(
@@ -2070,6 +2158,9 @@ async function chargerProfils(){
             }
         );
 
+        actualiserCategoriesDisponibles();
+        appliquerFiltresProfils();
+
     }
 
     catch(error){
@@ -2107,6 +2198,8 @@ if(
     recherche.addEventListener(
         "input",
         async()=>{
+
+            appliquerFiltresProfils();
 
             const texte =
                 recherche.value.trim();

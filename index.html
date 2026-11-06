@@ -1,148 +1,84 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>HuskyMichel</title>
-
 <link rel="icon" href="logo.jpg">
-
 <link rel="stylesheet" href="index.css">
 <link rel="stylesheet" href="youtube-theme.css">
-
 </head>
-
 <body>
-
 <header>
-
-<div class="logo">
-
-<a href="https://huskymichel.github.io/HuskyMichel-site/">
-
-<img src="Photo de profil/Accueil.jpg" alt="Accueil">
-
-</a>
-
-</div>
-
-<div class="search">
-
-    <input
-        id="rechercheProfil"
-        type="text"
-        placeholder="🔍 Rechercher un profil..."
-    >
-
-    <div id="resultatsRecherche"></div>
-
-</div>
-
-<div class="account">
-
-<button id="loginBtn">
-
-Se connecter
-
-</button>
-
-<div class="profile" id="profile">
-
-<img id="avatar">
-
-<div class="menu" id="menu">
-
-<a href="#">👤 Mon profil</a>
-
-<button id="changePhoto">
-
-🖼️ Changer la photo
-
-</button>
-
-<button id="logout">
-
-🚪 Déconnexion
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-</header>
-
-<main>
-
-<h1>Bienvenue !</h1>
-
-<!-- DIRECTS YOUTUBE -->
-<section id="sectionDirects" class="section-directs" style="display: none;">
-    <h2>🔴 En direct</h2>
-    <div id="listeDirects"></div>
-</section>
-
-<!-- LISTE DES CRÉATEURS -->
-<h2>Créateurs</h2>
-<div id="listeProfils"></div>
-
-</main>
-
-<div class="music-player">
-    <div class="music-top">
-        <div class="music-icon">🎵</div>
-
-        <div class="music-info">
-            <div id="trackTitle">Musique 1</div>
-            <div class="music-time">
-                <span id="currentTime">0:00</span>
-                /
-                <span id="duration">0:00</span>
+    <div class="logo">
+        <a href="https://huskymichel.github.io/HuskyMichel-site/">
+            <img src="Photo de profil/Accueil.jpg" alt="Accueil">
+        </a>
+    </div>
+    <div class="search">
+        <input id="rechercheProfil" type="text" placeholder="🔍 Rechercher un profil...">
+        <div id="resultatsRecherche"></div>
+    </div>
+    <div class="account">
+        <button id="loginBtn">Se connecter</button>
+        <div class="profile" id="profile">
+            <img id="avatar">
+            <div class="menu" id="menu">
+                <a href="#">👤 Mon profil</a>
+                <button id="changePhoto">🖼️ Changer la photo</button>
+                <button id="logout">🚪 Déconnexion</button>
             </div>
         </div>
     </div>
-
-    <input
-        type="range"
-        id="progressBar"
-        min="0"
-        max="100"
-        value="0"
-        step="0.1"
-    >
-
-    <div class="music-controls">
-        <button id="previousButton" aria-label="Musique précédente">⏮</button>
-
-        <button id="playButton" class="play-button" aria-label="Lire">
-            ▶
-        </button>
-
-        <button id="nextButton" aria-label="Musique suivante">⏭</button>
-
-        <div class="volume-container">
-            <span>🔊</span>
-            <input
-                type="range"
-                id="volumeBar"
-                min="0"
-                max="1"
-                value="0.7"
-                step="0.01"
-                aria-label="Volume"
-            >
+</header>
+<main>
+    <h1>Bienvenue !</h1>
+    <section id="sectionDirects" class="section-directs" style="display: none;">
+        <h2>🔴 En direct</h2>
+        <div id="listeDirects"></div>
+    </section>
+    <div class="titreCreateurs">
+        <div>
+            <h2>Créateurs</h2>
+            <p>Découvre les profils selon leurs catégories.</p>
         </div>
     </div>
+    <section class="filtresProfils" aria-label="Filtrer les créateurs">
+        <div class="filtreTexte">
+            <span class="filtreIcone">⌕</span>
+            <div>
+                <span class="filtreSurTitre">Explorer les créateurs</span>
+                <span class="filtreSousTitre">Affiche uniquement les profils qui correspondent à ton choix.</span>
+            </div>
+        </div>
+        <label class="selectCategorieWrap" for="filtreCategorie">
+            <span>Catégorie</span>
+            <select id="filtreCategorie">
+                <option value="">Toutes les catégories</option>
+            </select>
+            <span class="flecheSelect">⌄</span>
+        </label>
+    </section>
+    <p id="aucunProfilFiltre" class="aucunProfilFiltre" hidden>Aucun créateur ne correspond à ces filtres.</p>
+    <div id="listeProfils"></div>
+</main>
+<div class="music-player">
+    <div class="music-top">
+        <div class="music-icon">🎵</div>
+        <div class="music-info">
+            <div id="trackTitle">Musique 1</div>
+            <div class="music-time"><span id="currentTime">0:00</span> / <span id="duration">0:00</span></div>
+        </div>
+    </div>
+    <input type="range" id="progressBar" min="0" max="100" value="0" step="0.1">
+    <div class="music-controls">
+        <button id="previousButton" aria-label="Musique précédente">⏮</button>
+        <button id="playButton" class="play-button" aria-label="Lire">▶</button>
+        <button id="nextButton" aria-label="Musique suivante">⏭</button>
+        <div class="volume-container"><span>🔊</span><input type="range" id="volumeBar" min="0" max="1" value="0.7" step="0.01" aria-label="Volume"></div>
+    </div>
 </div>
-
 <audio id="backgroundMusic" preload="metadata"></audio>
-
 <script type="module" src="index.js"></script>
-
 </body>
 </html>
