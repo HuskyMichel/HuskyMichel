@@ -1033,27 +1033,6 @@ async function gererLike(
 }
 
 
-    catch(error){
-
-        console.error(
-            "Erreur lors du like :",
-            error
-        );
-
-
-        alert(
-            "Impossible de modifier le like."
-        );
-
-    }
-
-
-    bouton.dataset.chargement =
-        "false";
-
-}
-
-
 /* =========================================================
    COMPTER LES LIKES
 ========================================================= */
