@@ -1031,7 +1031,7 @@ async function gererLike(
     }
 
 }
-    }
+
 
     catch(error){
 
