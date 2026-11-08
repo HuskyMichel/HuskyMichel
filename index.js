@@ -14,7 +14,7 @@ import {
     getDoc,
     setDoc,
     deleteDoc,
-	onSnapshot
+    onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 
@@ -36,7 +36,7 @@ const menu =
 
 const logout =
     document.getElementById("logout");
-	
+
 const monProfil =
     document.querySelector('#menu a');
 
@@ -45,8 +45,9 @@ const changePhoto =
 
 const listeProfils =
     document.getElementById("listeProfils");
-	
-	/* =========================================================
+
+
+/* =========================================================
    DIRECTS YOUTUBE
 ========================================================= */
 
@@ -143,95 +144,159 @@ if (sectionDirects && listeDirects) {
 
 }
 
+
 const recherche =
     document.getElementById("rechercheProfil");
 
 const resultatsRecherche =
     document.getElementById("resultatsRecherche");
 
+
+/* =========================================================
+   FILTRE PAR CATEGORIE
+========================================================= */
+
 const filtreCategorie =
-    document.getElementById("filtreCategorie");
+    document.getElementById("filtreCategorie") ||
+    document.getElementById("categorieProfil");
 
 const aucunProfilFiltre =
     document.getElementById("aucunProfilFiltre");
 
-/* =========================================================
-   FILTRES DES PROFILS
-========================================================= */
 
-function appliquerFiltresProfils() {
-    if (!listeProfils) return;
+function appliquerFiltresProfils(){
 
-    const categorieChoisie = filtreCategorie?.value || "";
-    const texteRecherche = (recherche?.value || "").trim().toLocaleLowerCase("fr");
-    const cartes = listeProfils.querySelectorAll(".carteProfil");
-    let visibles = 0;
+    if(!listeProfils){
+        return;
+    }
 
-    cartes.forEach((carte) => {
+    const categorieChoisie =
+        filtreCategorie ? filtreCategorie.value.trim() : "";
+
+    const texteRecherche =
+        recherche ? recherche.value.trim().toLocaleLowerCase("fr") : "";
+
+    const cartes =
+        listeProfils.querySelectorAll(".carteProfil");
+
+    let nombreVisibles = 0;
+
+    cartes.forEach((carte)=>{
+
         let categories = [];
-        try {
+
+        try{
             categories = JSON.parse(carte.dataset.categories || "[]");
-        } catch (error) {
+        }catch(error){
             categories = [];
         }
 
-        const correspondCategorie = !categorieChoisie ||
-            categories.some((categorie) =>
-                String(categorie).toLocaleLowerCase("fr") === categorieChoisie.toLocaleLowerCase("fr")
+        const correspondCategorie =
+            !categorieChoisie ||
+            categories.some((categorie)=>
+                String(categorie).trim().toLocaleLowerCase("fr") ===
+                categorieChoisie.toLocaleLowerCase("fr")
             );
-        const pseudo = (carte.dataset.pseudo || "").toLocaleLowerCase("fr");
-        const correspondRecherche = !texteRecherche || pseudo.includes(texteRecherche);
-        const afficher = correspondCategorie && correspondRecherche;
+
+        const pseudo =
+            (carte.dataset.pseudo || "").toLocaleLowerCase("fr");
+
+        const correspondPseudo =
+            !texteRecherche || pseudo.includes(texteRecherche);
+
+        const afficher =
+            correspondCategorie && correspondPseudo;
 
         carte.hidden = !afficher;
-        if (afficher) visibles++;
-    });
 
-    if (aucunProfilFiltre) {
-        aucunProfilFiltre.hidden = cartes.length === 0 || visibles > 0;
-    }
-}
-
-function actualiserCategoriesDisponibles() {
-    if (!filtreCategorie || !listeProfils) return;
-
-    const categorieActuelle = filtreCategorie.value;
-    const categories = new Map();
-
-    listeProfils.querySelectorAll(".carteProfil").forEach((carte) => {
-        let profilCategories = [];
-        try {
-            profilCategories = JSON.parse(carte.dataset.categories || "[]");
-        } catch (error) {
-            profilCategories = [];
+        if(afficher){
+            nombreVisibles++;
         }
 
-        profilCategories.forEach((categorie) => {
+    });
+
+    if(aucunProfilFiltre){
+        aucunProfilFiltre.hidden =
+            cartes.length === 0 || nombreVisibles > 0;
+    }
+
+}
+
+
+function actualiserListeCategories(){
+
+    if(!filtreCategorie || !listeProfils){
+        return;
+    }
+
+    const valeurActuelle = filtreCategorie.value;
+    const categoriesDisponibles = new Map();
+
+    listeProfils.querySelectorAll(".carteProfil").forEach((carte)=>{
+
+        let categories = [];
+
+        try{
+            categories = JSON.parse(carte.dataset.categories || "[]");
+        }catch(error){
+            categories = [];
+        }
+
+        categories.forEach((categorie)=>{
+
             const nom = String(categorie || "").trim();
-            if (nom) categories.set(nom.toLocaleLowerCase("fr"), nom);
+
+            if(nom){
+                categoriesDisponibles.set(nom.toLocaleLowerCase("fr"), nom);
+            }
+
         });
+
     });
 
     filtreCategorie.replaceChildren();
-    const toutes = document.createElement("option");
-    toutes.value = "";
-    toutes.textContent = "Toutes les catégories";
-    filtreCategorie.appendChild(toutes);
 
-    [...categories.values()].sort((a, b) => a.localeCompare(b, "fr")).forEach((categorie) => {
-        const option = document.createElement("option");
-        option.value = categorie;
-        option.textContent = categorie;
-        filtreCategorie.appendChild(option);
-    });
+    const optionToutes = document.createElement("option");
+    optionToutes.value = "";
+    optionToutes.textContent = "Toutes les catégories";
+    filtreCategorie.appendChild(optionToutes);
 
-    if ([...filtreCategorie.options].some((option) => option.value === categorieActuelle)) {
-        filtreCategorie.value = categorieActuelle;
+    [...categoriesDisponibles.values()]
+        .sort((a,b)=>a.localeCompare(b,"fr",{sensitivity:"base"}))
+        .forEach((categorie)=>{
+
+            const option = document.createElement("option");
+            option.value = categorie;
+            option.textContent = categorie;
+            filtreCategorie.appendChild(option);
+
+        });
+
+    if([...filtreCategorie.options].some((option)=>option.value === valeurActuelle)){
+        filtreCategorie.value = valeurActuelle;
     }
+
 }
 
-if (filtreCategorie) {
+
+if(filtreCategorie){
     filtreCategorie.addEventListener("change", appliquerFiltresProfils);
+}
+
+
+/* Garantit que les cartes masquées restent invisibles */
+
+if(!document.getElementById("styleFiltresProfils")){
+
+    const styleFiltres = document.createElement("style");
+
+    styleFiltres.id = "styleFiltresProfils";
+
+    styleFiltres.textContent =
+        ".carteProfil[hidden]{display:none!important;}";
+
+    document.head.appendChild(styleFiltres);
+
 }
 
 
@@ -336,6 +401,7 @@ document.addEventListener(
     }
 );
 
+
 /* =========================================================
    MON PROFIL
 ========================================================= */
@@ -426,6 +492,7 @@ if(changePhoto){
     );
 
 }
+
 
 /* =========================================================
    CONNEXION
@@ -944,6 +1011,26 @@ async function gererLike(
 
         }
 
+
+        bouton.dataset.chargement =
+            "false";
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Erreur lors du like :",
+            error
+        );
+
+
+        bouton.dataset.chargement =
+            "false";
+
+    }
+
+}
     }
 
     catch(error){
@@ -1471,8 +1558,9 @@ async function chargerProfils(){
                     ? data.categories
                     : [];
 
+
                 carte.dataset.categories = JSON.stringify(categories);
-                carte.dataset.pseudo = pseudo;
+                carte.dataset.pseudo = String(pseudo).toLocaleLowerCase("fr");
 
 
                 const troisCategories =
@@ -1945,9 +2033,7 @@ async function chargerProfils(){
                     );
 
                 }
-
-
-                /* =================================================
+				                /* =================================================
                    CATEGORIES +X
                 ================================================= */
 
@@ -2158,7 +2244,11 @@ async function chargerProfils(){
             }
         );
 
-        actualiserCategoriesDisponibles();
+
+        /* Actualiser les catégories disponibles */
+
+        actualiserListeCategories();
+
         appliquerFiltresProfils();
 
     }
@@ -2199,10 +2289,13 @@ if(
         "input",
         async()=>{
 
-            appliquerFiltresProfils();
-
             const texte =
                 recherche.value.trim();
+
+
+            /* Mettre aussi à jour les profils affichés */
+
+            appliquerFiltresProfils();
 
 
             if(
@@ -2385,6 +2478,11 @@ if(
 
 }
 
+
+/* =========================================================
+   LECTEUR MUSICAL
+========================================================= */
+
 const music = document.getElementById("backgroundMusic");
 
 const playButton = document.getElementById("playButton");
@@ -2401,9 +2499,9 @@ const durationDisplay = document.getElementById("duration");
 
 /* =========================
    PLAYLIST
-   ========================= */
-   
-   const playlist = [
+========================= */
+
+const playlist = [
     {
         src: "musique1.mp3",
         title: "Carnaval"
@@ -2412,245 +2510,247 @@ const durationDisplay = document.getElementById("duration");
         src: "musique2.mp3",
         title: "Funk & Breakbeat (Upbeat Advertising Happy Cook)"
     },
-	{
-    src: "musique3.mp3",
+    {
+        src: "musique3.mp3",
         title: "Dance Playful Night"
     },
-	{
-    src: "musique4.mp3",
+    {
+        src: "musique4.mp3",
         title: "Powerful Dramatic Trailer"
     },
-	{
-    src: "musique5.mp3",
+    {
+        src: "musique5.mp3",
         title: "Dark"
     },
-	{
-    src: "musique6.mp3",
+    {
+        src: "musique6.mp3",
         title: "Powerful Percussion"
     },
-	{
-    src: "musique7.mp3",
+    {
+        src: "musique7.mp3",
         title: "Stomp Action Music"
     },
-	{
-    src: "musique8.mp3",
+    {
+        src: "musique8.mp3",
         title: "Stomp Drum Percussion"
     },
-	{
-    src: "musique9.mp3",
+    {
+        src: "musique9.mp3",
         title: "Escape Your Love (Upbeat Fashion Pop Dance)"
     },
-	{
-    src: "musique10.mp3",
+    {
+        src: "musique10.mp3",
         title: "Wonders of the Earth"
     },
-	{
-    src: "musique11.mp3",
+    {
+        src: "musique11.mp3",
         title: "Gvidon - Medicine"
     },
-	{
-    src: "musique12.mp3",
+    {
+        src: "musique12.mp3",
         title: "Background Music"
     },
-	{
-    src: "musique13.mp3",
+    {
+        src: "musique13.mp3",
         title: "Water | Afro-pop Music"
     },
-	{
-    src: "musique14.mp3",
+    {
+        src: "musique14.mp3",
         title: "Joyful Rhythm Walk Funk"
     },
-	{
-    src: "musique15.mp3",
+    {
+        src: "musique15.mp3",
         title: "Sport - Sports Rock Music"
     },
-	{
-    src: "musique16.mp3",
+    {
+        src: "musique16.mp3",
         title: "Suspense Tension - Suspenseful Tense"
     },
-	{
-    src: "musique17.mp3",
+    {
+        src: "musique17.mp3",
         title: "Moment of Peace - MickeysCat"
     },
-	{
-    src: "musique18.mp3",
+    {
+        src: "musique18.mp3",
         title: "Dramatic Cinematic Documentary"
     },
-	{
-    src: "musique19.mp3",
+    {
+        src: "musique19.mp3",
         title: "Football - Football Music"
     },
-	{
-    src: "musique20.mp3",
+    {
+        src: "musique20.mp3",
         title: "No Copyright Music"
     },
-	{
-    src: "musique21.mp3",
+    {
+        src: "musique21.mp3",
         title: "Organic Flow [10/15] (Remastered)"
     },
-	{
-    src: "musique22.mp3",
+    {
+        src: "musique22.mp3",
         title: "Blues Ballad"
     },
-	{
-    src: "musique23.mp3",
+    {
+        src: "musique23.mp3",
         title: "Energetic Action Sport"
     },
-	{
-    src: "musique24.mp3",
+    {
+        src: "musique24.mp3",
         title: "Motivation Sport Rock Trailer"
     },
-	{
-    src: "musique25.mp3",
+    {
+        src: "musique25.mp3",
         title: "Total War (Epic Action Cinematic Trailer Main)"
     },
-	{
-    src: "musique26.mp3",
+    {
+        src: "musique26.mp3",
         title: "Night Summer Lounge"
     },
-	{
-    src: "musique27.mp3",
+    {
+        src: "musique27.mp3",
         title: "Charming Phonk I Free Background Music I Free Music Lab Release"
     },
-	{
-    src: "musique28.mp3",
+    {
+        src: "musique28.mp3",
         title: "Berry (Groovy Bass Trap)"
     },
-	{
-    src: "musique29.mp3",
+    {
+        src: "musique29.mp3",
         title: "No Sleep | Hiphop Music"
     },
-	{
-    src: "musique30.mp3",
+    {
+        src: "musique30.mp3",
         title: "Epic"
     },
-	{
-    src: "musique31.mp3",
+    {
+        src: "musique31.mp3",
         title: "Upbeat Happy Corporate"
     },
-	{
-    src: "musique32.mp3",
+    {
+        src: "musique32.mp3",
         title: "Strong Character (powerful fuzz action sport rock"
-    },{
-    src: "musique33.mp3",
+    },
+    {
+        src: "musique33.mp3",
         title: "Action man (The Action Sport)"
     },
-	{
-    src: "musique34.mp3",
+    {
+        src: "musique34.mp3",
         title: "Action race rock music"
     },
-	{
-    src: "musique35.mp3",
+    {
+        src: "musique35.mp3",
         title: "Action trailer promo rock"
     },
-	{
-    src: "musique36.mp3",
+    {
+        src: "musique36.mp3",
         title: "Music Promotion"
     },
-	{
-    src: "musique37.mp3",
+    {
+        src: "musique37.mp3",
         title: "Vlog Hip-Hop"
     },
-	{
-    src: "musique38.mp3",
+    {
+        src: "musique38.mp3",
         title: "Lo-fi Music Loop - Sentimental Jazzy Love"
     },
-	{
-    src: "musique39.mp3",
+    {
+        src: "musique39.mp3",
         title: "Comedy Cartoon Funny Background Musice"
     },
-	{
-    src: "musique40.mp3",
+    {
+        src: "musique40.mp3",
         title: "Inspiring Cinematic Music"
     },
-	{
-    src: "musique41.mp3",
+    {
+        src: "musique41.mp3",
         title: "Running Night"
     },
-	{
-    src: "musique42.mp3",
+    {
+        src: "musique42.mp3",
         title: "Sweet Life (Luxury Chill)"
     },
-	{
-    src: "musique43.mp3",
+    {
+        src: "musique43.mp3",
         title: "Music free"
     },
-	{
-    src: "musique44.mp3",
+    {
+        src: "musique44.mp3",
         title: "Fresh"
     },
-	{
-    src: "musique45.mp3",
+    {
+        src: "musique45.mp3",
         title: "Groovy Vibe"
     },
-	{
-    src: "musique46.mp3",
+    {
+        src: "musique46.mp3",
         title: "Retro Lounge"
     },
-	{
-    src: "musique47.mp3",
+    {
+        src: "musique47.mp3",
         title: "Honey Kisses"
     },
-	{
-    src: "musique48.mp3",
+    {
+        src: "musique48.mp3",
         title: "Sandbreaker"
     },
-	{
-    src: "musique49.mp3",
+    {
+        src: "musique49.mp3",
         title: "Tell Me What"
     },
-	{
-    src: "musique50.mp3",
+    {
+        src: "musique50.mp3",
         title: "Embrace (Soft background beat no copyright)"
     },
-	{
-    src: "musique51.mp3",
+    {
+        src: "musique51.mp3",
         title: "Dark Cyberpunk I Free Background Music I Free Music Lab Release"
     },
-	{
-    src: "musique52.mp3",
+    {
+        src: "musique52.mp3",
         title: "For P"
     },
-	{
-    src: "musique53.mp3",
+    {
+        src: "musique53.mp3",
         title: "Hype | Drill Music"
     },
-	{
-    src: "musique54.mp3",
+    {
+        src: "musique54.mp3",
         title: "Cascade Breathe (Future Garage)"
     },
-	{
-    src: "musique55.mp3",
+    {
+        src: "musique55.mp3",
         title: "The Last Point (Beat, Electronic, Digital)"
     },
-	{
-    src: "musique56.mp3",
+    {
+        src: "musique56.mp3",
         title: "EONA - Emotional Ambient Pop"
     },
-	{
-    src: "musique57.mp3",
+    {
+        src: "musique57.mp3",
         title: "Background Music - New Age Nature"
     },
-	{
-    src: "musique58.mp3",
+    {
+        src: "musique58.mp3",
         title: "Vlog Beat Background"
     },
-	{
-    src: "musique59.mp3",
+    {
+        src: "musique59.mp3",
         title: "Deep Abstract Ambient_Snowcap"
     },
-	{
-    src: "musique60.mp3",
+    {
+        src: "musique60.mp3",
         title: "Chinese Lunar New Year"
-    },
+    }
 ];
+
 
 let currentMusic = 0;
 
 
 /* =========================
    CHARGER UNE MUSIQUE
-   ========================= */
+========================= */
 
 function loadTrack(index, autoplay = false) {
 
@@ -2677,7 +2777,7 @@ function loadTrack(index, autoplay = false) {
 
 /* =========================
    LECTURE / PAUSE
-   ========================= */
+========================= */
 
 playButton.addEventListener("click", () => {
 
@@ -2695,14 +2795,12 @@ playButton.addEventListener("click", () => {
 
 /* =========================
    BOUTON PRÉCÉDENT
-   ========================= */
+========================= */
 
 previousButton.addEventListener("click", () => {
 
     const wasPlaying = !music.paused;
 
-    // Si on est déjà avancé dans le morceau,
-    // le bouton précédent recommence le morceau.
     if (music.currentTime > 3) {
 
         music.currentTime = 0;
@@ -2716,7 +2814,7 @@ previousButton.addEventListener("click", () => {
 
 /* =========================
    BOUTON SUIVANT
-   ========================= */
+========================= */
 
 nextButton.addEventListener("click", () => {
 
@@ -2728,7 +2826,7 @@ nextButton.addEventListener("click", () => {
 
 /* =========================
    MUSIQUE TERMINÉE
-   ========================= */
+========================= */
 
 music.addEventListener("ended", () => {
 
@@ -2739,7 +2837,7 @@ music.addEventListener("ended", () => {
 
 /* =========================
    BOUTON PLAY
-   ========================= */
+========================= */
 
 music.addEventListener("play", () => {
 
@@ -2759,7 +2857,7 @@ music.addEventListener("pause", () => {
 
 /* =========================
    BARRE DE PROGRESSION
-   ========================= */
+========================= */
 
 music.addEventListener("timeupdate", () => {
 
@@ -2780,7 +2878,7 @@ music.addEventListener("timeupdate", () => {
 
 /* =========================
    DURÉE DU MORCEAU
-   ========================= */
+========================= */
 
 music.addEventListener("loadedmetadata", () => {
 
@@ -2796,7 +2894,7 @@ music.addEventListener("loadedmetadata", () => {
 
 /* =========================
    DÉPLACER LA POSITION
-   ========================= */
+========================= */
 
 progressBar.addEventListener("input", () => {
 
@@ -2812,7 +2910,7 @@ progressBar.addEventListener("input", () => {
 
 /* =========================
    VOLUME
-   ========================= */
+========================= */
 
 volumeBar.addEventListener("input", () => {
 
@@ -2823,7 +2921,7 @@ volumeBar.addEventListener("input", () => {
 
 /* =========================
    FORMAT DU TEMPS
-   ========================= */
+========================= */
 
 function formatTime(seconds) {
 
@@ -2844,7 +2942,7 @@ function formatTime(seconds) {
 
 /* =========================
    INITIALISATION
-   ========================= */
+========================= */
 
 music.volume = 0.7;
 
