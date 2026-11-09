@@ -2259,196 +2259,136 @@ async function chargerProfils(){
    RECHERCHE
 ========================================================= */
 
-if(
+if (
     recherche &&
     resultatsRecherche
-){
+) {
 
     recherche.addEventListener(
         "input",
-        async()=>{
+        async () => {
 
-            const texte =
-                recherche.value.trim();
+            const texte = recherche.value.trim();
 
-
-            /* Mettre aussi à jour les profils affichés */
-
+            /* Mettre à jour les profils affichés */
             appliquerFiltresProfils();
 
+            if (texte === "") {
 
-            if(
-                texte === ""
-            ){
-
-                resultatsRecherche.innerHTML =
-                    "";
-
-
-                resultatsRecherche.style.display =
-                    "none";
-
+                resultatsRecherche.innerHTML = "";
+                resultatsRecherche.style.display = "none";
 
                 return;
-
             }
 
+            try {
 
-            try{
-
-                const snapshot =
-                    await getDocs(
-                        collection(
-                            db,
-                            "users"
-                        )
-                    );
-
-
-                resultatsRecherche.innerHTML =
-                    "";
-
-
-                const texteRecherche =
-                    texte.toLowerCase();
-
-
-                let nombreResultats =
-                    0;
-
-
-                snapshot.forEach(
-                    (profilDoc)=>{
-
-                        const data =
-                            profilDoc.data();
-
-
-                        const pseudo =
-                            data.pseudo ||
-                            "";
-
-
-                        if(
-                            pseudo
-                                .toLowerCase()
-                                .includes(
-                                    texteRecherche
-                                )
-                        ){
-
-                            nombreResultats++;
-
-
-                            const resultat =
-                                document.createElement(
-                                    "div"
-                                );
-
-
-                            resultat.className =
-                                "resultatRecherche";
-
-
-                            const nom =
-                                document.createElement(
-                                    "div"
-                                );
-
-
-                            nom.className =
-                                "resultatRecherchePseudo";
-
-
-                            nom.textContent =
-                                pseudo;
-
-
-                            const image =
-                                document.createElement(
-                                    "img"
-                                );
-
-
-                            image.src =
-                                data.photo ||
-                                "";
-
-
-                            image.alt =
-                                pseudo;
-
-
-                            resultat.appendChild(
-                                nom
-                            );
-
-
-                            resultat.appendChild(
-                                image
-                            );
-
-
-                            resultat.addEventListener(
-                                "click",
-                                ()=>{
-
-                                    window.location.href =
-                                        "profil.html?pseudo=" +
-                                        encodeURIComponent(
-                                            pseudo
-                                        );
-
-                                }
-                            );
-
-
-                            resultatsRecherche.appendChild(
-                                resultat
-                            );
-
-                        }
-
-                    }
+                const snapshot = await getDocs(
+                    collection(db, "users")
                 );
 
+                resultatsRecherche.innerHTML = "";
 
-                if(
-                    nombreResultats > 0
-                ){
+                const texteRecherche = texte.toLowerCase();
 
-                    resultatsRecherche.style.display =
-                        "block";
+                let nombreResultats = 0;
 
-                }
+                snapshot.forEach((profilDoc) => {
 
-                else{
+                    const data = profilDoc.data();
 
-                    resultatsRecherche.innerHTML =
-                        "";
+                    const pseudo = data.pseudo || "";
 
+                    if (
+                        pseudo.toLowerCase().includes(texteRecherche)
+                    ) {
 
-                    resultatsRecherche.style.display =
-                        "none";
+                        nombreResultats++;
+
+                        /* CONTENEUR DU RESULTAT */
+                        const resultat = document.createElement("div");
+
+                        resultat.className = "resultatRecherche";
+
+                        resultat.style.display = "flex";
+                        resultat.style.alignItems = "center";
+                        resultat.style.justifyContent = "space-between";
+                        resultat.style.gap = "12px";
+
+                        /* PSEUDO À GAUCHE */
+                        const nom = document.createElement("div");
+
+                        nom.className = "resultatRecherchePseudo";
+                        nom.textContent = pseudo;
+
+                        nom.style.flex = "1";
+                        nom.style.textAlign = "left";
+
+                        /* PHOTO À DROITE */
+                        const image = document.createElement("img");
+
+                        image.src = data.photo || "";
+                        image.alt = pseudo;
+
+                        image.style.width = "42px";
+                        image.style.height = "42px";
+                        image.style.minWidth = "42px";
+                        image.style.objectFit = "cover";
+                        image.style.borderRadius = "50%";
+                        image.style.marginLeft = "auto";
+                        image.style.transition = "transform 0.2s ease";
+
+                        /* ZOOM AU SURVOL */
+                        image.addEventListener("mouseenter", () => {
+                            image.style.transform = "scale(1.15)";
+                        });
+
+                        image.addEventListener("mouseleave", () => {
+                            image.style.transform = "scale(1)";
+                        });
+
+                        /* AJOUT DANS LE BON ORDRE */
+                        resultat.appendChild(nom);
+                        resultat.appendChild(image);
+
+                        /* OUVRIR LE PROFIL */
+                        resultat.addEventListener("click", () => {
+
+                            window.location.href =
+                                "profil.html?pseudo=" +
+                                encodeURIComponent(pseudo);
+
+                        });
+
+                        resultatsRecherche.appendChild(resultat);
+
+                    }
+
+                });
+
+                /* AFFICHER LES RESULTATS */
+                if (nombreResultats > 0) {
+
+                    resultatsRecherche.style.display = "block";
+
+                } else {
+
+                    resultatsRecherche.innerHTML = "";
+                    resultatsRecherche.style.display = "none";
 
                 }
 
             }
 
-            catch(error){
+            catch (error) {
 
                 console.error(
                     "Erreur lors de la recherche :",
                     error
                 );
 
-
-                resultatsRecherche.innerHTML =
-                    "";
-
-
-                resultatsRecherche.style.display =
-                    "none";
+                resultatsRecherche.innerHTML = "";
+                resultatsRecherche.style.display = "none";
 
             }
 
@@ -2456,8 +2396,6 @@ if(
     );
 
 }
-
-
 /* =========================================================
    LECTEUR MUSICAL
 ========================================================= */
