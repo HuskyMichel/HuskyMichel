@@ -1,0 +1,74 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Gaming - HuskyMichel</title>
+
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="gaming.css">
+
+    <link rel="icon" href="Photo de profil/Accueil.jpg">
+</head>
+
+<body>
+
+    <header class="gaming-header">
+        <a href="index.html" class="gaming-retour">
+            ← Retour à l'accueil
+        </a>
+
+        <h1>🎮 Gaming</h1>
+        <p>Retrouve les profils selon leurs jeux vidéo préférés !</p>
+    </header>
+
+    <main class="gaming-container">
+
+        <!-- Liste des jeux -->
+        <section id="listeJeux" class="liste-jeux">
+
+            <div class="gaming-chargement">
+                Chargement des jeux...
+            </div>
+
+        </section>
+
+        <!-- Profils du jeu sélectionné -->
+        <section id="sectionProfilsJeu" class="section-profils-jeu" hidden>
+
+            <div class="gaming-titre-jeu">
+                <button id="retourJeux" type="button">
+                    ← Retour aux jeux
+                </button>
+
+                <h2 id="titreJeu"></h2>
+                <p id="nombreProfilsJeu"></p>
+            </div>
+
+            <div class="gaming-recherche">
+                <input
+                    type="search"
+                    id="rechercheProfilJeu"
+                    placeholder="Rechercher un profil..."
+                    autocomplete="off"
+                >
+            </div>
+
+            <div id="listeProfilsJeu" class="liste-profils-jeu">
+
+            </div>
+
+            <p id="aucunProfilJeu" hidden>
+                Aucun profil trouvé.
+            </p>
+
+        </section>
+
+    </main>
+
+    <script type="module" src="gaming.js"></script>
+
+</body>
+</html>

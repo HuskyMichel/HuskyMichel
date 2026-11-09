@@ -1,0 +1,219 @@
+
+/* ========================================
+   GAMING - HUSKYMICHEL
+======================================== */
+
+.gaming-header {
+    text-align: center;
+    padding: 35px 20px 20px;
+}
+
+.gaming-header h1 {
+    margin: 20px 0 8px;
+    font-size: 2.2rem;
+}
+
+.gaming-header p {
+    opacity: 0.8;
+}
+
+.gaming-retour {
+    display: inline-block;
+    text-decoration: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    color: inherit;
+    transition: 0.2s;
+}
+
+.gaming-retour:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.gaming-container {
+    width: min(1200px, 94%);
+    margin: 20px auto 50px;
+}
+
+/* Liste des jeux */
+
+.liste-jeux {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 20px;
+}
+
+.carte-jeu {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.carte-jeu:hover {
+    transform: translateY(-5px);
+    border-color: rgba(100, 170, 255, 0.7);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.image-jeu {
+    height: 145px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #263d68, #17243f);
+    font-size: 65px;
+}
+
+.infos-jeu {
+    padding: 15px 10px 18px;
+}
+
+.infos-jeu h3 {
+    margin: 0 0 7px;
+    font-size: 1.1rem;
+}
+
+.infos-jeu p {
+    margin: 0;
+    opacity: 0.75;
+    font-size: 0.9rem;
+}
+
+.gaming-chargement,
+.gaming-message-vide {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 30px 15px;
+    opacity: 0.8;
+}
+
+/* Page intérieure du jeu */
+
+.section-profils-jeu {
+    margin-top: 15px;
+}
+
+.gaming-titre-jeu {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.gaming-titre-jeu h2 {
+    margin: 18px 0 5px;
+    font-size: 1.8rem;
+}
+
+.gaming-titre-jeu p {
+    opacity: 0.75;
+}
+
+#retourJeux {
+    border: none;
+    border-radius: 9px;
+    padding: 10px 16px;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.1);
+    color: inherit;
+    font-size: 0.95rem;
+}
+
+#retourJeux:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+/* Recherche */
+
+.gaming-recherche {
+    max-width: 550px;
+    margin: 0 auto 25px;
+}
+
+.gaming-recherche input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    outline: none;
+    background: rgba(255, 255, 255, 0.08);
+    color: inherit;
+    font-size: 1rem;
+}
+
+.gaming-recherche input:focus {
+    border-color: #5799ff;
+}
+
+.gaming-recherche input::placeholder {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+/* Cartes de profils */
+
+.liste-profils-jeu {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 18px;
+}
+
+/* Réutilisation des classes des cartes de l'accueil */
+
+.liste-profils-jeu .carteProfil {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.liste-profils-jeu .cartePhoto {
+    object-fit: cover;
+}
+
+.boutonVoirProfilGaming {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 9px 15px;
+    border-radius: 9px;
+    background: #2878dc;
+    color: white;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.boutonVoirProfilGaming:hover {
+    background: #1762bd;
+}
+
+#aucunProfilJeu {
+    text-align: center;
+    padding: 25px;
+    opacity: 0.75;
+}
+
+@media (max-width: 600px) {
+    .gaming-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .liste-jeux {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .image-jeu {
+        height: 115px;
+        font-size: 50px;
+    }
+
+    .infos-jeu {
+        padding: 12px 6px;
+    }
+
+    .liste-profils-jeu {
+        grid-template-columns: 1fr;
+    }
+}
