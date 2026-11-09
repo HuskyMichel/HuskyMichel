@@ -55,7 +55,7 @@ let utilisateurActuel = null;
 
 const CONFIGURATION_JEUX = {
     "clash royale": {
-        image: "Images Gaming/clash-royale.jpg",
+        image: "Images Gaming/clash-royal.jpg",
         page: "clash-royal.html"
     },
 
