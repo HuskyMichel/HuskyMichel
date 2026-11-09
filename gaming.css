@@ -1,202 +1,263 @@
 
+
 /* ========================================
    GAMING - HUSKYMICHEL
 ======================================== */
 
+/* Fond sombre sur toute la page */
+
+html {
+    min-height: 100%;
+    background: #10131a;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    color: #f5f7fb;
+
+    background:
+        radial-gradient(circle at 10% -10%, #263c5a 0, transparent 34rem),
+        linear-gradient(135deg, #10131a, #151b25 60%, #0e1117);
+
+    background-color: #10131a;
+}
+
+/* ========================================
+   HEADER
+======================================== */
+
 .gaming-header {
-    text-align: center;
-    padding: 35px 20px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    min-height: 68px;
+    padding: 10px clamp(16px, 4vw, 52px);
+
+    background: rgba(16, 19, 26, 0.92);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(16px);
 }
 
-.gaming-header h1 {
-    margin: 20px 0 8px;
-    font-size: 2.2rem;
+.gaming-header .logo {
+    flex-shrink: 0;
 }
 
-.gaming-header p {
-    opacity: 0.8;
+.gaming-header .search {
+    flex: 1;
+    max-width: 600px;
 }
 
-.gaming-retour {
-    display: inline-block;
+.gaming-header .search input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.gaming-header .account {
+    flex-shrink: 0;
+}
+
+/* Menu du compte */
+
+#profile {
+    position: relative;
+}
+
+#avatar {
+    width: 42px;
+    height: 42px;
+    object-fit: cover;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+#menu {
+    display: none;
+    position: absolute;
+    top: 55px;
+    right: 0;
+    z-index: 2000;
+
+    min-width: 190px;
+    padding: 8px;
+
+    background: #202735;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+#menu a,
+#menu button {
+    display: block;
+    width: 100%;
+    padding: 11px 12px;
+
+    border: 0;
+    border-radius: 8px;
+
+    background: transparent;
+    color: #f5f7fb;
+
+    text-align: left;
     text-decoration: none;
-    padding: 10px 18px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.08);
-    color: inherit;
-    transition: 0.2s;
+    font-size: 0.95rem;
+
+    cursor: pointer;
 }
 
-.gaming-retour:hover {
-    background: rgba(255, 255, 255, 0.16);
+#menu a:hover,
+#menu button:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
+
+/* ========================================
+   INTRODUCTION
+======================================== */
 
 .gaming-container {
-    width: min(1200px, 94%);
-    margin: 20px auto 50px;
+    width: min(1250px, 94%);
+    margin: 0 auto;
+    padding: 35px 0 70px;
 }
 
-/* Liste des jeux */
+.gaming-introduction {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.gaming-introduction h1 {
+    margin: 0 0 8px;
+    font-size: 2.3rem;
+}
+
+.gaming-introduction p {
+    margin: 0;
+    color: #aab5c5;
+}
+
+/* ========================================
+   LISTE DES JEUX
+======================================== */
 
 .liste-jeux {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 22px;
 }
 
+/* Carte d'un jeu */
+
 .carte-jeu {
+    display: block;
+    overflow: hidden;
+
+    color: #f5f7fb;
+    text-decoration: none;
+
+    background: #191e28;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.06);
+
     cursor: pointer;
-    text-align: center;
-    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .carte-jeu:hover {
     transform: translateY(-5px);
-    border-color: rgba(100, 170, 255, 0.7);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+
+    border-color: rgba(85, 170, 255, 0.7);
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.3);
 }
+
+/* Image du jeu */
 
 .image-jeu {
-    height: 145px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 100%;
+    height: 190px;
+
+    display: block;
+    object-fit: cover;
+
     background: linear-gradient(135deg, #263d68, #17243f);
-    font-size: 65px;
 }
+
+.image-jeu.image-indisponible {
+    visibility: hidden;
+}
+
+/* Informations */
 
 .infos-jeu {
-    padding: 15px 10px 18px;
+    padding: 15px 16px 18px;
+    text-align: center;
 }
 
-.infos-jeu h3 {
+.infos-jeu h2 {
     margin: 0 0 7px;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
 }
 
 .infos-jeu p {
     margin: 0;
-    opacity: 0.75;
+    color: #aab5c5;
     font-size: 0.9rem;
 }
+
+/* ========================================
+   CHARGEMENT ET MESSAGES
+======================================== */
 
 .gaming-chargement,
 .gaming-message-vide {
     grid-column: 1 / -1;
-    text-align: center;
     padding: 30px 15px;
-    opacity: 0.8;
-}
 
-/* Page intérieure du jeu */
-
-.section-profils-jeu {
-    margin-top: 15px;
-}
-
-.gaming-titre-jeu {
+    color: #aab5c5;
     text-align: center;
-    margin-bottom: 25px;
 }
 
-.gaming-titre-jeu h2 {
-    margin: 18px 0 5px;
-    font-size: 1.8rem;
-}
+/* ========================================
+   RESPONSIVE
+======================================== */
 
-.gaming-titre-jeu p {
-    opacity: 0.75;
-}
+@media (max-width: 700px) {
 
-#retourJeux {
-    border: none;
-    border-radius: 9px;
-    padding: 10px 16px;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.1);
-    color: inherit;
-    font-size: 0.95rem;
-}
+    .gaming-header {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
 
-#retourJeux:hover {
-    background: rgba(255, 255, 255, 0.18);
-}
+    .gaming-header .logo {
+        order: 1;
+    }
 
-/* Recherche */
+    .gaming-header .account {
+        order: 2;
+    }
 
-.gaming-recherche {
-    max-width: 550px;
-    margin: 0 auto 25px;
-}
+    .gaming-header .search {
+        order: 3;
+        flex-basis: 100%;
+        max-width: none;
+    }
 
-.gaming-recherche input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 14px 18px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    outline: none;
-    background: rgba(255, 255, 255, 0.08);
-    color: inherit;
-    font-size: 1rem;
-}
-
-.gaming-recherche input:focus {
-    border-color: #5799ff;
-}
-
-.gaming-recherche input::placeholder {
-    color: rgba(255, 255, 255, 0.55);
-}
-
-/* Cartes de profils */
-
-.liste-profils-jeu {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 18px;
-}
-
-/* Réutilisation des classes des cartes de l'accueil */
-
-.liste-profils-jeu .carteProfil {
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.liste-profils-jeu .cartePhoto {
-    object-fit: cover;
-}
-
-.boutonVoirProfilGaming {
-    display: inline-block;
-    margin-top: 12px;
-    padding: 9px 15px;
-    border-radius: 9px;
-    background: #2878dc;
-    color: white;
-    text-decoration: none;
-    font-size: 0.9rem;
-    transition: background 0.2s;
-}
-
-.boutonVoirProfilGaming:hover {
-    background: #1762bd;
-}
-
-#aucunProfilJeu {
-    text-align: center;
-    padding: 25px;
-    opacity: 0.75;
-}
-
-@media (max-width: 600px) {
-    .gaming-header h1 {
-        font-size: 1.8rem;
+    .gaming-introduction h1 {
+        font-size: 1.9rem;
     }
 
     .liste-jeux {
@@ -205,15 +266,27 @@
     }
 
     .image-jeu {
-        height: 115px;
-        font-size: 50px;
+        height: 125px;
     }
 
     .infos-jeu {
-        padding: 12px 6px;
+        padding: 12px 7px 15px;
     }
 
-    .liste-profils-jeu {
-        grid-template-columns: 1fr;
+    .infos-jeu h2 {
+        font-size: 1rem;
     }
 }
+
+@media (max-width: 360px) {
+
+    .liste-jeux {
+        grid-template-columns: 1fr;
+    }
+
+    .image-jeu {
+        height: 175px;
+    }
+
+}
+

@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -16,17 +17,68 @@
 <body>
 
     <header class="gaming-header">
-        <a href="index.html" class="gaming-retour">
-            ← Retour à l'accueil
-        </a>
 
-        <h1>🎮 Gaming</h1>
-        <p>Retrouve les profils selon leurs jeux vidéo préférés !</p>
+        <div class="logo">
+            <a href="index.html">
+                <img src="Photo de profil/Accueil.jpg" alt="Accueil">
+            </a>
+        </div>
+
+        <div class="search">
+            <input
+                id="rechercheJeu"
+                type="search"
+                placeholder="Rechercher un jeu..."
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="account">
+
+            <button id="loginBtn" type="button">
+                Se connecter
+            </button>
+
+            <div class="profile" id="profile">
+
+                <img
+                    id="avatar"
+                    src=""
+                    alt="Mon compte"
+                    title="Mon compte"
+                >
+
+                <div class="menu" id="menu">
+
+                    <a href="#" id="monProfil">
+                        👤 Mon profil
+                    </a>
+
+                    <button id="changePhoto" type="button">
+                        🖼️ Changer la photo
+                    </button>
+
+                    <button id="logout" type="button">
+                        🚪 Déconnexion
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </header>
 
     <main class="gaming-container">
 
-        <!-- Liste des jeux -->
+        <div class="gaming-introduction">
+            <h1>Gaming</h1>
+            <p>
+                Retrouve les profils selon leurs jeux vidéo préférés !
+            </p>
+        </div>
+
         <section id="listeJeux" class="liste-jeux">
 
             <div class="gaming-chargement">
@@ -35,36 +87,9 @@
 
         </section>
 
-        <!-- Profils du jeu sélectionné -->
-        <section id="sectionProfilsJeu" class="section-profils-jeu" hidden>
-
-            <div class="gaming-titre-jeu">
-                <button id="retourJeux" type="button">
-                    ← Retour aux jeux
-                </button>
-
-                <h2 id="titreJeu"></h2>
-                <p id="nombreProfilsJeu"></p>
-            </div>
-
-            <div class="gaming-recherche">
-                <input
-                    type="search"
-                    id="rechercheProfilJeu"
-                    placeholder="Rechercher un profil..."
-                    autocomplete="off"
-                >
-            </div>
-
-            <div id="listeProfilsJeu" class="liste-profils-jeu">
-
-            </div>
-
-            <p id="aucunProfilJeu" hidden>
-                Aucun profil trouvé.
-            </p>
-
-        </section>
+        <p id="aucunJeuTrouve" class="gaming-message-vide" hidden>
+            Aucun jeu trouvé.
+        </p>
 
     </main>
 
@@ -72,3 +97,4 @@
 
 </body>
 </html>
+
