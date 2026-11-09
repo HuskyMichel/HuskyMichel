@@ -1,0 +1,39 @@
+
+/* =====================================
+   HUSKYMICHEL - CLASSEMENT DES VUES
+===================================== */
+
+/* Icône du titre */
+
+.titreClassement .iconeClassement {
+    background: linear-gradient(135deg, #428cff, #5740cf);
+    box-shadow: 0 0 35px rgba(66,140,255,0.3);
+}
+
+/* Compteur de vues */
+
+.nombreLikes {
+    color: #83baff;
+    background: rgba(65,140,255,0.13);
+    border-color: rgba(65,140,255,0.25);
+}
+
+.premier .nombreLikes {
+    color: #ffd447;
+    background: rgba(255,204,65,0.12);
+    border-color: rgba(255,204,65,0.3);
+}
+
+/* Harmonisation des trois premières places */
+
+.ligneClassement.premier {
+    --glow: #ffd447;
+}
+
+.ligneClassement.deuxieme {
+    --glow: #dce8f7;
+}
+
+.ligneClassement.troisieme {
+    --glow: #e9a477;
+}
