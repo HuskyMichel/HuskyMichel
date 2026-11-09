@@ -8,91 +8,37 @@ import {
 const listeClassement = document.getElementById("listeClassement");
 const nombreProfils = document.getElementById("nombreProfils");
 
-function obtenirMedaille(position) {
-    if (position === 1) return "🥇";
-    if (position === 2) return "🥈";
-    if (position === 3) return "🥉";
+function obtenirPosition(position) {
+    if (position === 1) return "🥇 1er";
+    if (position === 2) return "🥈 2e";
+    if (position === 3) return "🥉 3e";
     return position + "e";
-}
-
-function creerPhoto(url, pseudo, classe) {
-    const image = document.createElement("img");
-    image.className = classe;
-    image.alt = pseudo;
-    image.src = url || "Photo de profil/Accueil.jpg";
-
-    image.onerror = () => {
-        image.src = "Photo de profil/Accueil.jpg";
-    };
-
-    return image;
-}
-
-function ouvrirProfil(pseudo) {
-    window.location.href =
-        "profil.html?pseudo=" + encodeURIComponent(pseudo);
-}
-
-function creerPodium(profil, position) {
-    const carte = document.createElement("div");
-    carte.className = "cartePodium";
-
-    if (position === 1) carte.classList.add("premier");
-    if (position === 2) carte.classList.add("deuxieme");
-    if (position === 3) carte.classList.add("troisieme");
-
-    const medaille = document.createElement("span");
-    medaille.className = "medaillePodium";
-    medaille.textContent = obtenirMedaille(position);
-
-    const image = creerPhoto(
-        profil.photo,
-        profil.pseudo,
-        "photoPodium"
-    );
-
-    const pseudo = document.createElement("div");
-    pseudo.className = "pseudoPodium";
-    pseudo.textContent = profil.pseudo;
-
-    const likes = document.createElement("div");
-    likes.className = "likesPodium";
-    likes.textContent = "❤️ " + profil.likes + " likes";
-
-    const rang = document.createElement("span");
-    rang.className = "positionPodium";
-    rang.textContent = position === 1
-        ? "CHAMPION"
-        : "TOP " + position;
-
-    carte.append(
-        medaille,
-        image,
-        pseudo,
-        likes,
-        rang
-    );
-
-    carte.addEventListener("click", () => {
-        ouvrirProfil(profil.pseudo);
-    });
-
-    return carte;
 }
 
 function creerLigne(profil, position) {
     const ligne = document.createElement("div");
     ligne.className = "ligneClassement";
 
+    if (position <= 3) {
+        ligne.classList.add("topTrois");
+
+        if (position === 1) ligne.classList.add("premier");
+        if (position === 2) ligne.classList.add("deuxieme");
+        if (position === 3) ligne.classList.add("troisieme");
+    }
+
     const numero = document.createElement("div");
     numero.className = "positionClassement";
-    numero.textContent = obtenirMedaille(position);
+    numero.textContent = obtenirPosition(position);
 
-    const image = creerPhoto(
-        profil.photo,
-        profil.pseudo,
-        "photoClassement"
-    );
+    const image = document.createElement("img");
+    image.className = "photoClassement";
+    image.src = profil.photo || "Photo de profil/Accueil.jpg";
+    image.alt = profil.pseudo;
+
+    image.onerror = () => {
+        image.src = "Photo de profil/Accueil.jpg";
+    };
 
     const informations = document.createElement("div");
     informations.className = "infosClassement";
@@ -103,7 +49,16 @@ function creerLigne(profil, position) {
 
     const sousTitre = document.createElement("div");
     sousTitre.className = "sousTitreClassement";
-    sousTitre.textContent = "Position : " + position;
+
+    if (position === 1) {
+        sousTitre.textContent = "🏆 Meilleur classement";
+    } else if (position === 2) {
+        sousTitre.textContent = "✨ Deuxième place";
+    } else if (position === 3) {
+        sousTitre.textContent = "⭐ Troisième place";
+    } else {
+        sousTitre.textContent = "Position dans le classement";
+    }
 
     informations.append(pseudo, sousTitre);
 
@@ -111,15 +66,11 @@ function creerLigne(profil, position) {
     likes.className = "nombreLikes";
     likes.textContent = "❤️ " + profil.likes;
 
-    ligne.append(
-        numero,
-        image,
-        informations,
-        likes
-    );
+    ligne.append(numero, image, informations, likes);
 
     ligne.addEventListener("click", () => {
-        ouvrirProfil(profil.pseudo);
+        window.location.href =
+            "profil.html?pseudo=" + encodeURIComponent(profil.pseudo);
     });
 
     return ligne;
@@ -146,7 +97,7 @@ async function chargerClassementLikes() {
                 );
 
                 return {
-                    pseudo,
+                    pseudo: pseudo,
                     photo: data.photo || "",
                     likes: likesSnapshot.size
                 };
@@ -171,54 +122,14 @@ async function chargerClassementLikes() {
             return;
         }
 
-        // PODIUM DES TROIS PREMIERS
-
-        const podium = document.createElement("div");
-        podium.className = "podiumClassement";
-
-        // Ordre visuel : deuxième, premier, troisième
-        const ordrePodium = [
-            { index: 1, position: 2 },
-            { index: 0, position: 1 },
-            { index: 2, position: 3 }
-        ];
-
-        ordrePodium.forEach(item => {
-            if (classement[item.index]) {
-                podium.appendChild(
-                    creerPodium(
-                        classement[item.index],
-                        item.position
-                    )
-                );
-            }
+        classement.forEach((profil, index) => {
+            listeClassement.appendChild(
+                creerLigne(profil, index + 1)
+            );
         });
 
-        if (classement.length > 0) {
-            listeClassement.appendChild(podium);
-        }
-
-        // AUTRES POSITIONS
-
-        if (classement.length > 3) {
-            const titre = document.createElement("h3");
-            titre.className = "titreAutres";
-            titre.textContent = "Les autres positions";
-
-            listeClassement.appendChild(titre);
-
-            classement.slice(3).forEach((profil, index) => {
-                listeClassement.appendChild(
-                    creerLigne(profil, index + 4)
-                );
-            });
-        }
-
     } catch (error) {
-        console.error(
-            "Erreur lors du chargement du classement des likes :",
-            error
-        );
+        console.error("Erreur classement likes :", error);
 
         listeClassement.innerHTML =
             `<p class="messageClassement">Impossible de charger le classement. Vérifie les règles de sécurité Firebase.</p>`;

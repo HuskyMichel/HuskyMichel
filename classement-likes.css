@@ -1,0 +1,376 @@
+
+/* =====================================
+   HUSKYMICHEL - CLASSEMENT LIKES
+===================================== */
+
+html {
+    min-height: 100%;
+    background: #070d1b !important;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    color: white;
+    background:
+        radial-gradient(ellipse at 50% 0%, #193d70 0%, transparent 55%),
+        linear-gradient(180deg, #0b1930, #070d1b 80%) !important;
+    background-attachment: fixed !important;
+}
+
+/* HEADER */
+
+.headerClassement {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 6%;
+    background: rgba(5, 12, 25, 0.92) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(15px);
+}
+
+.retourAccueil {
+    display: inline-block;
+    padding: 11px 19px;
+    border-radius: 30px;
+    color: white !important;
+    text-decoration: none;
+    background: #1c3558;
+    border: 1px solid #35557e;
+    transition: 0.25s;
+}
+
+.retourAccueil:hover {
+    background: #2865ad;
+    transform: translateY(-2px);
+}
+
+/* TITRE */
+
+main {
+    width: min(1000px, 92%);
+    margin: auto;
+    padding: 50px 0 90px;
+}
+
+.titreClassement {
+    text-align: center;
+    margin-bottom: 45px;
+}
+
+.iconeClassement {
+    width: 78px;
+    height: 78px;
+    margin: 0 auto 20px;
+    display: grid;
+    place-items: center;
+    border-radius: 25px;
+    font-size: 38px;
+    background: linear-gradient(135deg, #ff527d, #b91d50);
+    box-shadow: 0 0 35px rgba(255,65,110,0.3);
+}
+
+.titreClassement h1 {
+    font-size: clamp(28px, 5vw, 43px);
+    margin: 0;
+    font-weight: 900;
+}
+
+.titreClassement p {
+    color: #a5b5ce;
+    margin-top: 12px;
+}
+
+/* CARTE DU CLASSEMENT */
+
+.classement {
+    padding: 28px;
+    border-radius: 25px;
+    background: rgba(13, 27, 49, 0.94) !important;
+    border: 1px solid rgba(130,170,220,0.15);
+    box-shadow: 0 20px 65px rgba(0,0,0,0.3);
+}
+
+.classementEntete {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.classementEntete h2 {
+    margin: 0;
+    font-size: 21px;
+}
+
+#nombreProfils {
+    color: #9db1ce;
+    font-size: 13px;
+}
+
+/* CARTES DES PROFILS */
+
+.ligneClassement {
+    --glow: transparent;
+    --bordure: rgba(255,255,255,0.08);
+
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    min-height: 85px;
+    margin-bottom: 15px;
+    padding: 16px 21px;
+    overflow: hidden;
+    border-radius: 19px;
+    background: linear-gradient(110deg, #172b48, #101e34) !important;
+    border: 1px solid var(--bordure);
+    cursor: pointer;
+    transition: transform 0.25s, box-shadow 0.25s;
+}
+
+.ligneClassement:hover {
+    transform: translateY(-4px) scale(1.008);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* LUMIÈRE ANIMÉE */
+
+.ligneClassement::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -100%;
+    background: conic-gradient(
+        transparent 0deg,
+        transparent 260deg,
+        var(--glow) 310deg,
+        transparent 360deg
+    );
+    animation: rotationLumiere 5s linear infinite;
+    opacity: 0;
+}
+
+.ligneClassement.topTrois::before {
+    opacity: 1;
+}
+
+.ligneClassement::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 2px;
+    border-radius: 17px;
+    background: linear-gradient(110deg, #172b48, #101e34);
+}
+
+@keyframes rotationLumiere {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* PREMIER */
+
+.ligneClassement.premier {
+    --glow: #ffd447;
+    --bordure: rgba(255,207,65,0.75);
+    box-shadow:
+        0 0 12px rgba(255,197,45,0.25),
+        0 0 35px rgba(255,197,45,0.12);
+    animation: auraOr 2.5s ease-in-out infinite;
+}
+
+@keyframes auraOr {
+    0%, 100% {
+        box-shadow: 0 0 12px rgba(255,197,45,0.2),
+                    0 0 25px rgba(255,197,45,0.1);
+    }
+    50% {
+        box-shadow: 0 0 22px rgba(255,197,45,0.45),
+                    0 0 50px rgba(255,197,45,0.2);
+    }
+}
+
+/* DEUXIÈME */
+
+.ligneClassement.deuxieme {
+    --glow: #dce8f7;
+    --bordure: rgba(204,220,240,0.65);
+    box-shadow: 0 0 22px rgba(190,210,235,0.12);
+}
+
+/* TROISIÈME */
+
+.ligneClassement.troisieme {
+    --glow: #e9a477;
+    --bordure: rgba(205,133,86,0.65);
+    box-shadow: 0 0 22px rgba(205,133,86,0.12);
+}
+
+/* NUMÉRO */
+
+.positionClassement {
+    width: 65px;
+    flex-shrink: 0;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 900;
+    color: #a9bad3;
+}
+
+.premier .positionClassement {
+    color: #ffd447;
+    font-size: 23px;
+}
+
+.deuxieme .positionClassement {
+    color: #dce8f7;
+}
+
+.troisieme .positionClassement {
+    color: #e9a477;
+}
+
+/* PHOTO */
+
+.photoClassement {
+    width: 62px;
+    height: 62px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #203550;
+    border: 2px solid rgba(255,255,255,0.2);
+}
+
+.premier .photoClassement {
+    width: 72px;
+    height: 72px;
+    border: 3px solid #ffd447;
+    box-shadow: 0 0 18px rgba(255,205,60,0.5);
+}
+
+.deuxieme .photoClassement {
+    border: 3px solid #dce8f7;
+}
+
+.troisieme .photoClassement {
+    border: 3px solid #e9a477;
+}
+
+/* INFORMATIONS */
+
+.infosClassement {
+    flex: 1;
+    min-width: 0;
+}
+
+.pseudoClassement {
+    font-size: 17px;
+    font-weight: 900;
+    overflow-wrap: anywhere;
+}
+
+.sousTitreClassement {
+    margin-top: 6px;
+    color: #92a7c5;
+    font-size: 12px;
+}
+
+/* LIKES */
+
+.nombreLikes {
+    flex-shrink: 0;
+    padding: 11px 16px;
+    border-radius: 30px;
+    color: #ff8da8;
+    background: rgba(255,65,110,0.13);
+    border: 1px solid rgba(255,65,110,0.2);
+    font-weight: 900;
+    font-size: 14px;
+}
+
+.premier .nombreLikes {
+    color: #ffd447;
+    background: rgba(255,204,65,0.12);
+    border-color: rgba(255,204,65,0.3);
+}
+
+/* AUTRES PROFILS */
+
+.titreAutres {
+    margin: 35px 0 18px;
+    color: #9db1ce;
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.messageClassement {
+    padding: 30px;
+    color: #a5b5ce;
+    text-align: center;
+}
+
+/* MOBILE */
+
+@media(max-width: 600px) {
+    main {
+        width: 94%;
+        padding-top: 30px;
+    }
+
+    .classement {
+        padding: 16px 10px;
+    }
+
+    .classementEntete {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .ligneClassement {
+        gap: 9px;
+        padding: 12px 9px;
+        min-height: 65px;
+    }
+
+    .positionClassement {
+        width: 42px;
+        font-size: 15px;
+    }
+
+    .photoClassement {
+        width: 47px;
+        height: 47px;
+    }
+
+    .premier .photoClassement {
+        width: 53px;
+        height: 53px;
+    }
+
+    .pseudoClassement {
+        font-size: 13px;
+    }
+
+    .nombreLikes {
+        padding: 8px 9px;
+        font-size: 11px;
+    }
+}
+
+@media(prefers-reduced-motion: reduce) {
+    .ligneClassement,
+    .ligneClassement::before {
+        animation: none !important;
+        transition: none !important;
+    }
+}
