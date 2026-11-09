@@ -580,9 +580,7 @@ if(
                 recherche.value.trim();
 
 
-            if(
-                texte === ""
-            ){
+            if(texte === ""){
 
                 resultatsRecherche.innerHTML =
                     "";
@@ -651,6 +649,18 @@ if(
                                 "resultatRecherche";
 
 
+                            // Organisation du résultat
+                            resultat.style.display =
+                                "flex";
+
+                            resultat.style.alignItems =
+                                "center";
+
+                            resultat.style.width =
+                                "100%";
+
+
+                            // Pseudo à gauche
                             const nom =
                                 document.createElement(
                                     "div"
@@ -665,6 +675,14 @@ if(
                                 nomProfil;
 
 
+                            nom.style.flex =
+                                "1";
+
+                            nom.style.minWidth =
+                                "0";
+
+
+                            // Photo à droite
                             const image =
                                 document.createElement(
                                     "img"
@@ -675,9 +693,56 @@ if(
                                 data.photo ||
                                 "";
 
-
                             image.alt =
                                 nomProfil;
+
+
+                            image.style.width =
+                                "42px";
+
+                            image.style.height =
+                                "42px";
+
+                            image.style.minWidth =
+                                "42px";
+
+                            image.style.objectFit =
+                                "cover";
+
+                            image.style.borderRadius =
+                                "50%";
+
+                            image.style.marginLeft =
+                                "auto";
+
+                            image.style.transition =
+                                "transform 0.2s ease";
+
+                            image.style.transform =
+                                "scale(1)";
+
+
+                            // Petit zoom au survol
+                            image.addEventListener(
+                                "mouseenter",
+                                ()=>{
+
+                                    image.style.transform =
+                                        "scale(1.15)";
+
+                                }
+                            );
+
+
+                            image.addEventListener(
+                                "mouseleave",
+                                ()=>{
+
+                                    image.style.transform =
+                                        "scale(1)";
+
+                                }
+                            );
 
 
                             resultat.appendChild(
@@ -690,6 +755,7 @@ if(
                             );
 
 
+                            // Ouvrir le profil
                             resultat.addEventListener(
                                 "click",
                                 ()=>{
@@ -714,9 +780,7 @@ if(
                 );
 
 
-                if(
-                    nombreResultats > 0
-                ){
+                if(nombreResultats > 0){
 
                     resultatsRecherche.style.display =
                         "block";
@@ -755,8 +819,6 @@ if(
     );
 
 }
-
-
 /* =========================================================
    VUES DU PROFIL
 ========================================================= */
