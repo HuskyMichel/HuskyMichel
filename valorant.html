@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VALORANT - HuskyMichel</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="valorant.css">
+    <link rel="icon" href="Photo de profil/Accueil.jpg">
+</head>
+<body>
+    <header class="valorant-header">
+        <div class="logo">
+            <a href="gaming.html">
+                <img src="Photo de profil/Accueil.jpg" alt="Retour">
+            </a>
+        </div>
+
+        <div class="search">
+            <input id="rechercheProfil" type="search"
+                placeholder="🔍 Rechercher un profil..." autocomplete="off">
+        </div>
+
+        <div class="account">
+            <button id="loginBtn" type="button">Se connecter</button>
+
+            <div class="profile" id="profile">
+                <img id="avatar" src="" alt="Mon compte" title="Mon compte">
+
+                <div class="menu" id="menu">
+                    <a href="#" id="monProfil">👤 Mon profil</a>
+                    <button id="changePhoto" type="button">🖼️ Changer la photo</button>
+                    <button id="logout" type="button">🚪 Déconnexion</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="valorant-container">
+        <a href="gaming.html" class="retour-gaming">← Retour aux jeux</a>
+
+        <div class="valorant-introduction">
+            <img src="Images Gaming/valorant.jpg" alt="VALORANT" class="valorant-image">
+            <h1>VALORANT</h1>
+            <p>Retrouve les profils qui jouent à VALORANT !</p>
+            <p id="nombreProfils">Chargement...</p>
+        </div>
+
+        <section id="listeProfils" class="liste-profils">
+            <div class="valorant-chargement">Chargement des profils...</div>
+        </section>
+
+        <p id="aucunProfilTrouve" class="valorant-message-vide" hidden>
+            Aucun profil trouvé.
+        </p>
+    </main>
+
+    <script type="module" src="valorant.js"></script>
+</body>
+</html>

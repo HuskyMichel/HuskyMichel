@@ -1,0 +1,243 @@
+
+html {
+    min-height: 100%;
+    background: #10131a;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    color: #f5f7fb;
+    background:
+        radial-gradient(circle at 10% -10%, #4a2434 0, transparent 34rem),
+        linear-gradient(135deg, #10131a, #1c1720 60%, #0e1117);
+    background-color: #10131a;
+}
+
+.valorant-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    min-height: 68px;
+    padding: 10px clamp(16px, 4vw, 52px);
+    background: rgba(16, 19, 26, 0.92);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(16px);
+}
+
+.valorant-header .logo {
+    flex-shrink: 0;
+}
+
+.valorant-header .search {
+    flex: 1;
+    max-width: 600px;
+}
+
+.valorant-header .search input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.valorant-header .account {
+    flex-shrink: 0;
+}
+
+#profile {
+    position: relative;
+}
+
+#avatar {
+    width: 42px;
+    height: 42px;
+    object-fit: cover;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid rgba(255,255,255,0.2);
+}
+
+#menu {
+    display: none;
+    position: absolute;
+    top: 55px;
+    right: 0;
+    z-index: 2000;
+    min-width: 190px;
+    padding: 8px;
+    background: #202735;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+#menu a,
+#menu button {
+    display: block;
+    width: 100%;
+    padding: 11px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #f5f7fb;
+    text-align: left;
+    text-decoration: none;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+#menu a:hover,
+#menu button:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.valorant-container {
+    width: min(1250px, 94%);
+    margin: 0 auto;
+    padding: 25px 0 70px;
+}
+
+.retour-gaming {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: #ff526b;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.retour-gaming:hover {
+    text-decoration: underline;
+}
+
+.valorant-introduction {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.valorant-image {
+    display: block;
+    width: min(100%, 500px);
+    height: 220px;
+    margin: 0 auto 20px;
+    object-fit: cover;
+    border-radius: 16px;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.35);
+}
+
+.valorant-introduction h1 {
+    margin: 0 0 8px;
+    font-size: 2.3rem;
+}
+
+.valorant-introduction p {
+    color: #aab5c5;
+}
+
+.liste-profils {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 22px;
+}
+
+.carte-profil-valorant {
+    display: block;
+    overflow: hidden;
+    color: #f5f7fb;
+    text-decoration: none;
+    background: #191e28;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.carte-profil-valorant:hover {
+    transform: translateY(-5px);
+    border-color: #ff526b;
+}
+
+.photo-profil-valorant {
+    width: 100%;
+    height: 190px;
+    display: block;
+    object-fit: cover;
+    background: #252b38;
+}
+
+.infos-profil-valorant {
+    padding: 15px 16px 18px;
+    text-align: center;
+}
+
+.infos-profil-valorant h2 {
+    margin: 0 0 7px;
+    font-size: 1.15rem;
+}
+
+.infos-profil-valorant p {
+    margin: 0;
+    color: #aab5c5;
+    font-size: 0.9rem;
+}
+
+.valorant-chargement,
+.valorant-message-vide {
+    grid-column: 1 / -1;
+    padding: 30px 15px;
+    color: #aab5c5;
+    text-align: center;
+}
+
+@media (max-width: 700px) {
+    .valorant-header {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .valorant-header .logo {
+        order: 1;
+    }
+
+    .valorant-header .account {
+        order: 2;
+    }
+
+    .valorant-header .search {
+        order: 3;
+        flex-basis: 100%;
+        max-width: none;
+    }
+
+    .valorant-introduction h1 {
+        font-size: 1.9rem;
+    }
+
+    .liste-profils {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .photo-profil-valorant {
+        height: 125px;
+    }
+
+    .infos-profil-valorant {
+        padding: 12px 7px 15px;
+    }
+
+    .infos-profil-valorant h2 {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .liste-profils {
+        grid-template-columns: 1fr;
+    }
+
+    .photo-profil-valorant {
+        height: 175px;
+    }
+}
