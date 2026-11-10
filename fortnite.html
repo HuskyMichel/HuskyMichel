@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Fortnite - HuskyMichel</title>
+
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="fortnite.css">
+
+    <link rel="icon" href="Photo de profil/Accueil.jpg">
+</head>
+
+<body>
+
+    <header class="gaming-header">
+
+        <div class="logo">
+            <a href="index.html">
+                <img src="Photo de profil/Accueil.jpg" alt="Accueil">
+            </a>
+        </div>
+
+        <div class="search">
+            <input
+                id="rechercheProfil"
+                type="search"
+                placeholder="🔍 Rechercher un profil..."
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="account">
+
+            <button id="loginBtn" type="button">
+                Se connecter
+            </button>
+
+            <div class="profile" id="profile">
+
+                <img id="avatar" src="" alt="Mon compte">
+
+                <div class="menu" id="menu">
+
+                    <a href="#" id="monProfil">👤 Mon profil</a>
+
+                    <button id="changePhoto" type="button">
+                        🖼️ Changer la photo
+                    </button>
+
+                    <button id="logout" type="button">
+                        🚪 Déconnexion
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </header>
+
+    <main class="fortnite-container">
+
+        <a href="gaming.html" class="retour-gaming">
+            ← Retour aux jeux
+        </a>
+
+        <div class="fortnite-introduction">
+
+            <img
+                src="Images Gaming/fortnite.jpg"
+                alt="Fortnite"
+                class="fortnite-image"
+            >
+
+            <h1>Fortnite</h1>
+
+            <p>
+                Retrouve les profils des joueurs de Fortnite !
+            </p>
+
+            <p id="nombreProfils">
+                Chargement des profils...
+            </p>
+
+        </div>
+
+        <section id="listeProfils" class="liste-profils">
+
+            <p class="message-chargement">
+                Chargement des profils...
+            </p>
+
+        </section>
+
+        <p id="aucunProfil" hidden>
+            Aucun profil trouvé.
+        </p>
+
+    </main>
+
+    <script type="module" src="fortnite.js"></script>
+
+</body>
+</html>
