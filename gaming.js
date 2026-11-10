@@ -79,11 +79,6 @@ const CONFIGURATION_JEUX = {
         page: "roblox.html"
     },
 
-    "gta 5": {
-        image: "Images Gaming/gta-5.jpg",
-        page: "gta-5.html"
-    },
-
     "gta v": {
         image: "Images Gaming/gta-5.jpg",
         page: "gta-5.html"
