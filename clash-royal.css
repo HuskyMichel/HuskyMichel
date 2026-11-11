@@ -1,22 +1,6 @@
-
 /* ========================================
    CLASH ROYALE - HUSKYMICHEL
 ======================================== */
-
-html {
-    min-height: 100%;
-    background: #10131a;
-}
-
-body {
-    min-height: 100vh;
-    margin: 0;
-    color: #f5f7fb;
-
-    background:
-        radial-gradient(circle at 10% -10%, #263c5a 0, transparent 34rem),
-        linear-gradient(135deg, #10131a, #151b25 60%, #0e1117);
-}
 
 /* HEADER */
 
@@ -51,60 +35,6 @@ body {
 .gaming-header .search input {
     width: 100%;
     box-sizing: border-box;
-}
-
-/* COMPTE */
-
-#profile {
-    position: relative;
-}
-
-#avatar {
-    width: 42px;
-    height: 42px;
-    object-fit: cover;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid rgba(255,255,255,0.2);
-}
-
-#menu {
-    display: none;
-    position: absolute;
-    top: 55px;
-    right: 0;
-    z-index: 2000;
-
-    min-width: 190px;
-    padding: 8px;
-
-    background: #202735;
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-}
-
-#menu a,
-#menu button {
-    display: block;
-    width: 100%;
-    padding: 11px 12px;
-
-    border: 0;
-    border-radius: 8px;
-
-    background: transparent;
-    color: #f5f7fb;
-
-    text-align: left;
-    text-decoration: none;
-    font-size: 0.95rem;
-    cursor: pointer;
-}
-
-#menu a:hover,
-#menu button:hover {
-    background: rgba(255,255,255,0.1);
 }
 
 /* CONTENU */
@@ -181,66 +111,12 @@ body {
     color: rgba(255,255,255,0.55);
 }
 
-/* PROFILS */
+/* GRILLE DES CARTES DE L'ACCUEIL */
 
 .liste-profils {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 20px;
-}
-
-.carte-clash {
-    overflow: hidden;
-    background: #191e28;
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 16px;
-    transition: 0.2s;
-}
-
-.carte-clash:hover {
-    transform: translateY(-4px);
-    border-color: rgba(85,170,255,0.7);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-}
-
-.clash-photo {
-    display: block;
-    width: 100%;
-    height: 210px;
-    object-fit: cover;
-    background: #232a37;
-}
-
-.clash-infos {
-    padding: 17px;
-}
-
-.clash-infos h2 {
-    margin: 0 0 9px;
-    font-size: 1.2rem;
-}
-
-.clash-description {
-    color: #aab5c5;
-    line-height: 1.5;
-    overflow-wrap: anywhere;
-}
-
-.bouton-profil-clash {
-    display: inline-block;
-    margin-top: 10px;
-    padding: 10px 15px;
-
-    border-radius: 9px;
-    background: #2878dc;
-    color: white;
-
-    text-decoration: none;
-    transition: 0.2s;
-}
-
-.bouton-profil-clash:hover {
-    background: #1762bd;
 }
 
 /* MESSAGES */
@@ -252,6 +128,12 @@ body {
     text-align: center;
     color: #aab5c5;
 }
+
+#aucunProfil[hidden] {
+    display: none;
+}
+
+/* MOBILE */
 
 @media (max-width: 700px) {
 
