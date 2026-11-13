@@ -1,17 +1,22 @@
 /* ========================================
-   FORTNITE - HUSKYMICHEL
+   CLASH ROYALE - HUSKYMICHEL
 ======================================== */
 
-/* HEADER */
-html,
-body {
+html {
     min-height: 100%;
-    background: #0b0b0b;
+    background: #10131a !important;
 }
 
 body {
     min-height: 100vh;
-    background-color: #0b0b0b;
+    margin: 0;
+    color: #f5f7fb;
+
+    background:
+        radial-gradient(circle at 10% -10%, #263c5a 0, transparent 34rem),
+        linear-gradient(135deg, #10131a, #151b25 60%, #0e1117) !important;
+
+    background-attachment: fixed;
 }
 
 .gaming-header {
