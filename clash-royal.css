@@ -1,21 +1,6 @@
-
 /* ========================================
    CLASH ROYALE - HUSKYMICHEL
 ======================================== */
-
-html,
-body {
-    margin: 0;
-    min-height: 100%;
-    background: transparent;
-}
-
-body {
-    min-height: 100vh;
-    color: #f5f7fb;
-}
-
-/* HEADER */
 
 .gaming-header {
     position: sticky;
